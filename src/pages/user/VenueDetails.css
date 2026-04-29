@@ -1,0 +1,13 @@
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.booked-date {
+  background-color: #fff1f2 !important;
+  color: #fb7185 !important;
+  text-decoration: line-through !important;
+}
+
+.booked-date:hover {
+  background-color: #ffe4e6 !important;
+}

@@ -1,0 +1,68 @@
+/* Google font FIRST */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+/* Then Tailwind */
+@import "tailwindcss";
+
+/* Then your styles */
+* {
+  /* margin: 0; */
+  box-sizing: border-box;
+  font-family: "Rubik", sans-serif;
+}
+
+body {
+  background-color: #f7f6f2;
+  /* Warm soft beige from design */
+  color: #2a2a2a;
+}
+
+/* =========================
+   🎨 DESIGN TOKENS (THEME)
+========================= */
+@theme {
+  --color-brand-primary: #4a5043;
+  --color-brand-light: #5f6558;
+  --color-brand-bg: #f7f6f2;
+  --color-brand-text: #2a2a2a;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Rubik", sans-serif;
+}
+
+/* =========================
+   🌍 BASE STYLES
+========================= */
+@layer base {
+  /* body {
+    @apply bg-white text-gray-800;
+  } */
+}
+
+/* =========================
+   🧩 OPTIONAL UTILITIES
+========================= */
+@layer utilities {
+
+  /* Example: custom shadow */
+  .shadow-soft {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Step transition animation */
+  .animate-step-in {
+    animation: stepIn 0.35s ease both;
+  }
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
