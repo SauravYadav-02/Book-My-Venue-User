@@ -14,6 +14,7 @@ import Home from "./pages/user/Home";
 import Discover from "./pages/user/Discover";
 import VenueDetails from "./pages/user/VenueDetails";
 import Profile from "./pages/user/Profile";
+import Wishlist from "./pages/user/Wishlist";
 
 // Context
 import { VenueProvider } from "./store/Venuecontext";
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="discover" element={<Discover />} />
           <Route path="venue/:id" element={<VenueDetails />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="wishlist" element={<Wishlist />} />
         </Route>
 
 

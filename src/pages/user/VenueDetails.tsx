@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Calendar, Clock, Heart, MapPin, Share2, ShieldCheck, Star, Users, } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, } from "lucide-react";
 import { getVenueById, getVenueImage, type Venue } from "../../services/VenueUserservice ";
 import { getBookedDatesForVenue, createBooking } from "../../services/bookingService";
 import { currencyFormatter } from "../../utils/currency";
@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./VenueDetails.css";
+import WishlistButton from "../../components/user/WishlistButton";
 
 // ── Time slot options ────────────────────────────────────────────────
 const TIME_SLOTS = [
@@ -28,7 +29,6 @@ export default function VenueDetails() {
     // Booking form state
     const [eventDate, setEventDate] = useState<Date | null>(null);
     const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0].value);
-    const [wishlist, setWishlist] = useState(false);
     const [bookedDates, setBookedDates] = useState<string[]>([]);
     const [isBooking, setIsBooking] = useState(false);
 
@@ -59,12 +59,12 @@ export default function VenueDetails() {
 
     const bookedDatesList = bookedDates.map(d => {
         const [y, m, dNum] = d.split('-');
-        return new Date(Number(y), Number(m)-1, Number(dNum));
+        return new Date(Number(y), Number(m) - 1, Number(dNum));
     });
 
     const isDateBooked = (date: Date) => {
         return bookedDatesList.some(
-            bookedDate => 
+            bookedDate =>
                 bookedDate.getFullYear() === date.getFullYear() &&
                 bookedDate.getMonth() === date.getMonth() &&
                 bookedDate.getDate() === date.getDate()
@@ -104,7 +104,7 @@ export default function VenueDetails() {
 
         try {
             setIsBooking(true);
-            
+
             const yyyy = eventDate.getFullYear();
             const mm = String(eventDate.getMonth() + 1).padStart(2, '0');
             const dd = String(eventDate.getDate()).padStart(2, '0');
@@ -210,16 +210,7 @@ export default function VenueDetails() {
                         />
                         {/* Action buttons */}
                         <div className="absolute top-4 right-4 flex gap-2 z-10">
-                            <button
-                                onClick={() => setWishlist((p) => !p)}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow transition-all duration-200 ${wishlist
-                                    ? "bg-red-500 text-white"
-                                    : "bg-white/90 text-gray-600 hover:text-red-500"
-                                    }`}
-                                aria-label="Save to wishlist"
-                            >
-                                <Heart size={18} fill={wishlist ? "currentColor" : "none"} />
-                            </button>
+                            <WishlistButton venueId={venue._id} className="w-10 h-10" />
                             <button
                                 className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-gray-600 flex items-center justify-center shadow hover:text-[#5C614D] transition-colors duration-200"
                                 aria-label="Share venue"

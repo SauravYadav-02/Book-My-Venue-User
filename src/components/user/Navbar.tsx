@@ -38,6 +38,7 @@ export default function Navbar() {
       <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-brand-text">
         <Link to="/" className="hover:text-brand-primary transition-colors">Home</Link>
         <Link to="/discover" className="hover:text-brand-primary transition-colors">Discover</Link>
+        <Link to="/wishlist" className="hover:text-brand-primary transition-colors">Wishlist</Link>
         <Link to="/" className="hover:text-brand-primary transition-colors">Planning</Link>
         <Link to="/" className="hover:text-brand-primary transition-colors">Inspiration</Link>
       </nav>
@@ -72,6 +73,12 @@ export default function Navbar() {
                   className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
                 >
                   My Profile
+                </Link>
+                <Link
+                  to="/wishlist"
+                  className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
+                >
+                  My Wishlist
                 </Link>
                 <button
                   onClick={handleLogout}
