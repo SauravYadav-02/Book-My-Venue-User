@@ -2,6 +2,7 @@ import { MapPin, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { currencyFormatter } from "../../utils/currency";
 import WishlistButton from "../../components/user/WishlistButton";
+import { motion } from "framer-motion";
 
 interface DiscoverCardProps {
     venueId: string;
@@ -27,16 +28,23 @@ export default function DiscoverCard({
     const navigate = useNavigate();
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
             className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-400 cursor-pointer flex flex-col"
             style={{ borderRadius: "1.5rem" }}
+            onClick={() => navigate(`/venue/${venueId}`)}
         >
             {/* ── Image Container ─────────────────────────────── */}
             <div
                 className="relative overflow-hidden m-3 flex-shrink-0"
                 style={{ borderRadius: "1.2rem", aspectRatio: "4/3" }}
             >
-                <img
+                <motion.img
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.6 }}
                     src={image}
                     alt={title}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105"
@@ -96,7 +104,8 @@ export default function DiscoverCard({
                 </div>
 
                 {/* Book Now button */}
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/venue/${venueId}`);
@@ -104,8 +113,8 @@ export default function DiscoverCard({
                     className="w-full bg-[#5C614D] hover:bg-[#4C5040] text-white text-sm font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-[#5C614D]/30 hover:-translate-y-0.5 transform tracking-wide"
                 >
                     Book Now
-                </button>
+                </motion.button>
             </div>
-        </div>
+        </motion.div>
     );
 }

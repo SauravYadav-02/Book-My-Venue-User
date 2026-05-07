@@ -1,33 +1,11 @@
 const BASE_URL = "http://localhost:3000/venues";
 export const MEDIA_BASE_URL = "http://localhost:3000";
 
+import { type Venue } from "../types/venue.types";
+
 export const getVenueImage = (mediaFiles: string[]): string => {
     return mediaFiles?.[0] ? `${MEDIA_BASE_URL}/${mediaFiles[0]}` : "/placeholder.jpg";
 };
-
-export interface Venue {
-    _id: string;
-    vendorId: string;
-    name: string;
-    type?: string;
-    capacity: number;
-    description?: string;
-    pricePerDay: number;
-    address?: string;
-    city: string;
-    state: string;
-    zip?: string;
-    country: string;
-    lat?: string;
-    lng?: string;
-    amenities?: string[];
-    availableFrom?: string;
-    mediaFiles: string[];
-    status: "pending" | "approved" | "rejected";
-    adminDescription?: string;
-    createdAt: string;
-    updatedAt: string;
-}
 
 // ✅ Get All Venues
 export const getAllVenues = async (): Promise<Venue[]> => {

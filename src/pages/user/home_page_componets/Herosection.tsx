@@ -1,17 +1,33 @@
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function HeroSection() {
     return (
         <section className="w-full max-w-5xl mx-auto px-6 pt-36 md:pt-48 pb-20 flex flex-col items-center text-center">
-            <h1 className="text-5xl md:text-[5rem] font-medium text-[#2d2d2d] tracking-tight mb-2 leading-[1.1]">
+            <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-5xl md:text-[5rem] font-medium text-[#2d2d2d] tracking-tight mb-2 leading-[1.1]"
+            >
                 Find a space that feels like<br /> home.
-            </h1>
-            <p className="text-gray-500 text-lg md:text-xl mb-12 max-w-2xl">
+            </motion.h1>
+            <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-gray-500 text-lg md:text-xl mb-12 max-w-2xl"
+            >
                 Bespoke venues for weddings, retreats, and creative gatherings.
-            </p>
+            </motion.p>
 
             {/* Floating Search Bar */}
-            <div className="bg-white rounded-[2rem] md:rounded-full p-4 md:p-2.5 md:pl-8 flex flex-col md:flex-row items-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full max-w-3xl border border-gray-100 gap-4 md:gap-0">
+            <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="bg-white rounded-[2rem] md:rounded-full p-4 md:p-2.5 md:pl-8 flex flex-col md:flex-row items-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full max-w-3xl border border-gray-100 gap-4 md:gap-0"
+            >
                 <div className="w-full md:flex-1 flex flex-col text-left px-2 md:px-0 pr-0 md:pr-4">
                     <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Location</span>
                     <input
@@ -34,7 +50,7 @@ export default function HeroSection() {
                     <Search size={18} className="hidden md:block" />
                     <span className="md:hidden font-medium">Search</span>
                 </button>
-            </div>
+            </motion.div>
         </section>
     );
-}
+}

@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, } from "lucide-react";
-import { getVenueById, getVenueImage, type Venue } from "../../services/VenueUserservice ";
-import { getBookedDatesForVenue, createBooking } from "../../services/bookingService";
+import { getVenueById, getVenueImage } from "../../services/VenueUserservice ";
+import { type Venue } from "../../types/venue.types";
+import { getBookedDatesForVenue } from "../../services/bookingService";
+import { type PaymentBooking, type CreateBookingPayload } from "../../services/paymentService";
 import { currencyFormatter } from "../../utils/currency";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./VenueDetails.css";
 import WishlistButton from "../../components/user/WishlistButton";
+import VenueRating from "../../components/user/VenueRating";
+import PaymentModal from "../../components/user/PaymentModal";
+import { motion } from "framer-motion";
 
 // ── Time slot options ────────────────────────────────────────────────
 const TIME_SLOTS = [
@@ -32,30 +37,43 @@ export default function VenueDetails() {
     const [bookedDates, setBookedDates] = useState<string[]>([]);
     const [isBooking, setIsBooking] = useState(false);
 
+    // Payment modal state
+    const [bookingPayload, setBookingPayload] = useState<CreateBookingPayload | null>(null);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+
     // ── Fetch venue ──────────────────────────────────────────────────
-    useEffect(() => {
+    const fetchVenue = async () => {
         if (!id) return;
+        try {
+            setLoading(true);
+            setError(null);
 
-        const fetchVenue = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+            const data = await getVenueById(id);
+            setVenue(data);
 
-                const data = await getVenueById(id);
-                setVenue(data);
+            const dates = await getBookedDatesForVenue(id);
+            setBookedDates(dates);
 
-                const dates = await getBookedDatesForVenue(id);
-                setBookedDates(dates);
+        } catch (err: unknown) {
+            setError((err as Error).message || "Failed to load venue");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            } catch (err: unknown) {
-                setError((err as Error).message || "Failed to load venue");
-            } finally {
-                setLoading(false);
-            }
-        };
-
+    useEffect(() => {
         fetchVenue();
     }, [id]);
+
+    const handleRatingUpdate = async () => {
+        if (!id) return;
+        try {
+            const data = await getVenueById(id);
+            setVenue(data);
+        } catch (err) {
+            console.error("Failed to refresh venue after rating:", err);
+        }
+    };
 
     const bookedDatesList = bookedDates.map(d => {
         const [y, m, dNum] = d.split('-');
@@ -95,6 +113,11 @@ export default function VenueDetails() {
             return;
         }
 
+        if (isDateBooked(eventDate)) {
+            toast.error("This date is already booked. Please select another date.");
+            return;
+        }
+
         const userId = localStorage.getItem("userId");
         if (!userId) {
             toast.error("Please login to book a venue");
@@ -110,20 +133,32 @@ export default function VenueDetails() {
             const dd = String(eventDate.getDate()).padStart(2, '0');
             const formattedDate = `${yyyy}-${mm}-${dd}`;
 
-            await createBooking(
+            setBookingPayload({
                 userId,
-                venue!.vendorId,
-                venue!._id,
-                formattedDate,
-                total
-            );
-            toast.success("Venue booked successfully!");
-            navigate("/profile");
+                vendorId: venue!.vendorId,
+                venueId: venue!._id,
+                date: formattedDate,
+                bookingAmount: total,
+            });
+
+            setShowPaymentModal(true);
         } catch (error: any) {
-            toast.error(error?.response?.data?.error || "Failed to book venue");
+            toast.error(error?.response?.data?.error || error?.response?.data?.message || "Failed to initiate booking");
         } finally {
             setIsBooking(false);
         }
+    };
+
+    const handlePaymentComplete = (_updatedBooking: PaymentBooking) => {
+        toast.success("Payment confirmed! Your booking is now active.");
+        setEventDate(null);
+    };
+
+    const handleModalClose = () => {
+        setShowPaymentModal(false);
+        setBookingPayload(null);
+        // Refresh booked dates so the newly booked date is marked
+        if (id) getBookedDatesForVenue(id).then(setBookedDates).catch(console.error);
     };
 
     // ── Derived pricing ──────────────────────────────────────────────
@@ -199,7 +234,12 @@ export default function VenueDetails() {
             <div className="max-w-7xl mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
 
                 {/* ── Left Column ──────────────────────────────────── */}
-                <div className="lg:col-span-2 space-y-8">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="lg:col-span-2 space-y-8"
+                >
 
                     {/* Hero Image */}
                     <div className="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-lg group">
@@ -229,7 +269,7 @@ export default function VenueDetails() {
                             </span>
                             <span className="flex items-center gap-1 text-sm font-semibold text-[#2d2d2d]">
                                 <Star size={14} className="fill-amber-400 text-amber-400" />
-                                4.8
+                                {venue.averageRating || 0} ({venue.ratingCount || 0} reviews)
                             </span>
                         </div>
 
@@ -279,10 +319,22 @@ export default function VenueDetails() {
                             </div>
                         </div>
                     )}
-                </div>
+
+                    {/* Venue Rating Section */}
+                    <VenueRating 
+                        venueId={venue._id} 
+                        venueName={venue.name} 
+                        onRatingUpdate={handleRatingUpdate}
+                    />
+                </motion.div>
 
                 {/* ── Right Column — Booking Card ───────────────────── */}
-                <div className="lg:col-span-1 sticky top-28">
+                <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="lg:col-span-1 sticky top-28"
+                >
                     <div className="bg-white rounded-3xl shadow-[0_4px_40px_rgb(0,0,0,0.08)] border border-gray-100 overflow-hidden">
                         <div className="p-6 space-y-5">
                             {/* Price header */}
@@ -307,6 +359,7 @@ export default function VenueDetails() {
                                         selected={eventDate}
                                         onChange={handleDateChange}
                                         minDate={new Date()}
+                                        excludeDates={bookedDatesList}
                                         dayClassName={getDayClassName}
                                         placeholderText="Select a date"
                                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
@@ -361,17 +414,31 @@ export default function VenueDetails() {
                                 </div>
                             </div>
 
+                            {/* Upfront payment callout */}
+                            <div className="bg-[#5C614D]/5 border border-[#5C614D]/10 rounded-xl px-3 py-2.5">
+                                <p className="text-xs font-semibold text-[#5C614D] uppercase tracking-wider mb-1.5">Payment Breakdown</p>
+                                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Upfront (20% — due now)</span>
+                                    <span className="font-bold text-[#5C614D]">{currencyFormatter.format(total * 0.2)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-400">
+                                    <span>Remaining (80% — at event)</span>
+                                    <span className="font-medium">{currencyFormatter.format(total * 0.8)}</span>
+                                </div>
+                            </div>
+
                             {/* CTA */}
                             <button
+                                id="book-venue-btn"
                                 onClick={handleBooking}
-                                disabled={isBooking || !eventDate}
+                                disabled={isBooking || !eventDate || isDateBooked(eventDate)}
                                 className="w-full bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-gray-400 text-white py-4 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg shadow-[#5C614D]/20 hover:shadow-[#5C614D]/40 hover:-translate-y-0.5 transform"
                             >
-                                {isBooking ? "Booking..." : "Request to Book"}
+                                {isBooking ? "Creating Booking..." : "Book & Pay Upfront"}
                             </button>
 
                             <p className="text-center text-xs text-gray-400 font-medium tracking-wide uppercase">
-                                No Immediate Charge
+                                20% upfront · balance due at event
                             </p>
                         </div>
                     </div>
@@ -387,8 +454,19 @@ export default function VenueDetails() {
                             </p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && bookingPayload && venue && (
+                <PaymentModal
+                    bookingPayload={bookingPayload}
+                    venueName={venue.name}
+                    onClose={handleModalClose}
+                    onPaymentComplete={handlePaymentComplete}
+                />
+            )}
         </div>
     );
 }
+

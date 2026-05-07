@@ -1,9 +1,10 @@
-import React from 'react';
+
 import { useVenues } from '../../store/Usevenues';
 import DiscoverCard from './DiscoverCard';
 import { getVenueImage } from '../../services/VenueUserservice ';
 import { HeartCrack } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export default function Wishlist() {
     const { venues, wishlistIds, loading } = useVenues();
@@ -21,11 +22,22 @@ export default function Wishlist() {
     return (
         <div className="min-h-screen bg-[#F7F6F2] py-20 px-6 md:px-10 lg:px-20 font-sans">
             <div className="max-w-7xl mx-auto mt-10">
-                <h1 className="text-4xl md:text-5xl font-serif text-[#2d2d2d] mb-4">Your Wishlist</h1>
-                <p className="text-gray-500 mb-12">Keep track of your favorite venues for your upcoming events.</p>
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <h1 className="text-4xl md:text-5xl font-serif text-[#2d2d2d] mb-4">Your Wishlist</h1>
+                    <p className="text-gray-500 mb-12">Keep track of your favorite venues for your upcoming events.</p>
+                </motion.div>
 
                 {wishlistedVenues.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 mt-10">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex flex-col items-center justify-center bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 mt-10"
+                    >
                         <div className="bg-red-50 p-6 rounded-full mb-6">
                             <HeartCrack size={48} className="text-red-400" />
                         </div>
@@ -39,9 +51,14 @@ export default function Wishlist() {
                         >
                             Explore Venues
                         </Link>
-                    </div>
+                    </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    >
                         {wishlistedVenues.map((venue) => (
                             <DiscoverCard
                                 key={venue._id}
@@ -54,9 +71,10 @@ export default function Wishlist() {
                                 type={venue.type}
                             />
                         ))}
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>
     );
 }
+

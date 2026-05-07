@@ -2,6 +2,7 @@ import { Sparkles, ArrowRight, SearchX } from "lucide-react";
 import { getVenueImage } from "../../services/VenueUserservice ";
 import { useVenues } from "../../store/Usevenues";
 import DiscoverCard from "./DiscoverCard";
+import { motion } from "framer-motion";
 
 export default function Discover() {
     const { venues, loading, error, refetch } = useVenues();
@@ -18,7 +19,12 @@ export default function Discover() {
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                    <div className="max-w-2xl">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="max-w-2xl"
+                    >
                         <div className="flex items-center gap-3 mb-6">
                             <span className="h-px w-8 bg-[#5C614D]"></span>
                             <span className="text-[11px] font-bold tracking-[0.25em] text-[#5C614D] uppercase flex items-center gap-2">
@@ -33,16 +39,21 @@ export default function Discover() {
                         <p className="text-gray-500 text-lg leading-relaxed max-w-xl">
                             Curated venues for extraordinary events. From intimate gatherings to grand celebrations, find the perfect backdrop for your next unforgettable moment.
                         </p>
-                    </div>
+                    </motion.div>
                     {!loading && !error && (
-                        <div className="flex flex-col items-end gap-4">
+                        <motion.div 
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="flex flex-col items-end gap-4"
+                        >
                             <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-full shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100">
                                 <div className="w-2 h-2 rounded-full bg-[#5C614D] animate-pulse" />
                                 <span className="text-sm font-medium text-[#2d2d2d] tracking-wide">
                                     {venues.length} Venues Available
                                 </span>
                             </div>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
 
@@ -67,7 +78,11 @@ export default function Discover() {
 
                 {/* Error State */}
                 {error && (
-                    <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-[2rem] shadow-sm border border-gray-100">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-[2rem] shadow-sm border border-gray-100"
+                    >
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
                             <SearchX size={32} />
                         </div>
@@ -80,23 +95,32 @@ export default function Discover() {
                             Try Again
                             <ArrowRight size={18} />
                         </button>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Empty State */}
                 {!loading && !error && venues.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-[2rem] shadow-sm border border-gray-100">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-[2rem] shadow-sm border border-gray-100"
+                    >
                         <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-6">
                             <SearchX size={32} />
                         </div>
                         <h3 className="text-2xl font-serif text-[#2d2d2d] mb-4">No venues found</h3>
                         <p className="text-gray-500 text-lg max-w-md">We couldn't find any venues at the moment. Please check back later or modify your search criteria.</p>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Grid */}
                 {!loading && !error && venues.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    >
                         {venues.map((venue) => (
                             <DiscoverCard
                                 key={venue._id}
@@ -112,7 +136,7 @@ export default function Discover() {
                                 rating={4.8}
                             />
                         ))}
-                    </div>
+                    </motion.div>
                 )}
 
             </section>
@@ -120,7 +144,13 @@ export default function Discover() {
             {/* Bottom CTA */}
             {!loading && !error && venues.length > 0 && (
                 <section className="w-full bg-white border-t border-gray-100 py-24 relative z-10 mt-12">
-                    <div className="max-w-4xl mx-auto px-6 text-center">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="max-w-4xl mx-auto px-6 text-center"
+                    >
                         <span className="text-[11px] font-bold tracking-[0.25em] text-[#5C614D] uppercase mb-6 block">
                             Need Assistance?
                         </span>
@@ -134,9 +164,9 @@ export default function Discover() {
                             Contact Our Team
                             <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
                         </button>
-                    </div>
+                    </motion.div>
                 </section>
             )}
         </div>
     );
-}
+}

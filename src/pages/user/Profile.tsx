@@ -55,7 +55,7 @@ export default function Profile() {
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#F7F6F2] shadow-inner">
             {user?.profilePhoto ? (
               <img
-                src={`http://localhost:3000/${user.profilePhoto}`}
+                src={user.profilePhoto}
                 alt={user.name}
                 className="w-full h-full object-cover"
               />
@@ -98,39 +98,61 @@ export default function Profile() {
         
         {bookingData?.bookings && bookingData.bookings.length > 0 ? (
           <div className="space-y-4">
-            {bookingData.bookings.map((booking) => (
-              <div key={booking._id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition-shadow">
-                <div>
-                  <h3 className="text-lg font-bold text-[#2d2d2d] mb-2">
-                    {booking.venueId?.name || "Unknown Venue"}
-                  </h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1.5">
-                      <CalendarDays size={16} />
-                      {new Date(booking.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <MapPin size={16} />
-                      {booking.venueId?.location || "Location not provided"}
-                    </span>
+            {bookingData.bookings.map((booking) => {
+              const total = (booking as any).totalBookingAmount || booking.cost || 0;
+              const paid = (booking as any).amountPaid || 0;
+              const remaining = Math.max(total - paid, 0);
+              const paymentStatus: string = (booking as any).paymentStatus || "pending";
+              return (
+                <div key={booking._id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-[#2d2d2d] mb-2">
+                        {booking.venueId?.name || "Unknown Venue"}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5">
+                          <CalendarDays size={16} />
+                          {new Date(booking.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <MapPin size={16} />
+                          {booking.venueId?.location || "Location not provided"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
+                      <div className="text-xl font-serif font-semibold text-[#2d2d2d]">
+                        ₹{total.toLocaleString()}
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                        paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
+                        paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {paymentStatus === 'success' && <CheckCircle size={12} />}
+                        {paymentStatus === 'failed' && <XCircle size={12} />}
+                        {paymentStatus === 'pending' ? 'Payment Pending' : paymentStatus === 'success' ? 'Paid' : 'Failed'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-3">
+                    <div className="bg-gray-50 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Total</p>
+                      <p className="text-sm font-bold text-[#2d2d2d]">₹{total.toLocaleString()}</p>
+                    </div>
+                    <div className={`rounded-xl p-3 text-center ${paid > 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Paid (20%)</p>
+                      <p className={`text-sm font-bold ${paid > 0 ? 'text-green-700' : 'text-gray-400'}`}>₹{paid.toLocaleString()}</p>
+                    </div>
+                    <div className={`rounded-xl p-3 text-center ${remaining > 0 ? 'bg-amber-50' : 'bg-gray-50'}`}>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Remaining</p>
+                      <p className={`text-sm font-bold ${remaining > 0 ? 'text-amber-600' : 'text-gray-400'}`}>₹{remaining.toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2">
-                  <div className="text-xl font-serif font-semibold text-[#2d2d2d]">
-                    ${booking.cost.toLocaleString()}
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                    booking.status === 'approved' ? 'bg-green-100 text-green-700' : 
-                    booking.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {booking.status === 'approved' && <CheckCircle size={12} />}
-                    {booking.status === 'rejected' && <XCircle size={12} />}
-                    {booking.status}
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">

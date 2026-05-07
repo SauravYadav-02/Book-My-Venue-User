@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { getApprovedVenues } from "../services/VenueUserservice ";
-import type { Venue } from "../services/VenueUserservice ";
+import type { Venue } from "../types/venue.types";
 
 interface VenueContextType {
     venues: Venue[];

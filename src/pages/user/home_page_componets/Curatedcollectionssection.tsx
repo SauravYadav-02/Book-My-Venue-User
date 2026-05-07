@@ -2,6 +2,7 @@ import historicBarnImg from "../../../assets/historic_barn.png";
 import urbanLoftImg from "../../../assets/urban_loft.png";
 import secretGardenImg from "../../../assets/secret_garden.png";
 import CollectionCard from "./Collectioncard"; // ← capital C in CollectionCard
+import { motion } from "framer-motion";
 
 const collections = [
     { image: historicBarnImg, title: "Historic Barns", venueCount: 12 },
@@ -12,14 +13,21 @@ const collections = [
 export default function CuratedCollectionsSection() {
     return (
         <section className="w-full max-w-7xl mx-auto px-6 py-24 text-center">
-            <h2 className="text-4xl font-serif text-brand-text mb-4">Curated Collections</h2>
-            <p className="text-gray-500 mb-12">Explore our handpicked selections for every mood and occasion.</p>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+            >
+                <h2 className="text-4xl font-serif text-brand-text mb-4">Curated Collections</h2>
+                <p className="text-gray-500 mb-12">Explore our handpicked selections for every mood and occasion.</p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {collections.map((c) => (
-                    <CollectionCard key={c.title} {...c} />
+                {collections.map((c, i) => (
+                    <CollectionCard key={c.title} index={i} {...c} />
                 ))}
             </div>
         </section>
     );
-}
+}

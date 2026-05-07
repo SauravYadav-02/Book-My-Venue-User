@@ -1,5 +1,6 @@
-
 import { Star, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 interface VenueCardProps {
   image: string;
@@ -20,10 +21,26 @@ export default function VenueCard({
   capacity,
   rating
 }: VenueCardProps) {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-white rounded-3xl p-3 shadow-sm hover:shadow-md transition-shadow">
+    <motion.div 
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      onClick={() => navigate('/discover')}
+      className="bg-white rounded-3xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+    >
       <div className="relative h-60 rounded-2xl overflow-hidden mb-4">
-        <img src={image} alt={name} className="w-full h-full object-cover" />
+        <motion.img 
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.4 }}
+          src={image} 
+          alt={name} 
+          className="w-full h-full object-cover origin-center" 
+        />
         <button className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-xs font-bold tracking-wider px-4 py-2 rounded-full uppercase hover:bg-white transition-colors">
           View
         </button>
@@ -48,6 +65,6 @@ export default function VenueCard({
           <span>{location} • {capacity}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

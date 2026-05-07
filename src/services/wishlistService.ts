@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Venue } from "./VenueUserservice ";
+import type { Venue } from "../types/venue.types";
 
 const BASE_URL = "http://localhost:3000/api/wishlist";
 

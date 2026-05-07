@@ -1,11 +1,14 @@
-import { LogIn, User as UserIcon } from "lucide-react";
+import { LogIn, User as UserIcon, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getUserById } from "../../services/userService";
 import type { UserProfile } from "../../types/user.types";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,14 +46,18 @@ export default function Navbar() {
         <Link to="/" className="hover:text-brand-primary transition-colors">Inspiration</Link>
       </nav>
 
-      <div className="flex items-center gap-6 text-sm font-medium text-brand-text relative">
+      <div className="flex items-center gap-4 md:gap-6 text-sm font-medium text-brand-text relative">
         {user ? (
-          <div className="relative group cursor-pointer flex items-center">
+          <div 
+            className="relative cursor-pointer flex items-center"
+            onMouseEnter={() => setIsProfileOpen(true)}
+            onMouseLeave={() => setIsProfileOpen(false)}
+          >
             {/* Profile Avatar */}
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#4C5040] shadow-sm transition-transform group-hover:scale-105">
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#4C5040] shadow-sm transition-transform hover:scale-105">
               {user.profilePhoto ? (
                 <img
-                  src={`http://localhost:3000/${user.profilePhoto}`}
+                  src={user.profilePhoto}
                   alt={user.name}
                   className="w-full h-full object-cover"
                 />
@@ -62,32 +69,42 @@ export default function Navbar() {
             </div>
 
             {/* Hover Dropdown */}
-            <div className="absolute top-full right-0 mt-3 pt-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200">
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-2 min-w-[150px] flex flex-col">
-                <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                  <p className="text-xs text-gray-400 font-semibold tracking-wider uppercase">Signed in as</p>
-                  <p className="text-sm font-bold text-gray-800 truncate">{user.name}</p>
-                </div>
-                <Link
-                  to="/profile"
-                  className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full right-0 mt-3 pt-2 z-50"
                 >
-                  My Profile
-                </Link>
-                <Link
-                  to="/wishlist"
-                  className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                >
-                  My Wishlist
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2.5 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
+                  <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-2 min-w-[150px] flex flex-col">
+                    <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                      <p className="text-xs text-gray-400 font-semibold tracking-wider uppercase">Signed in as</p>
+                      <p className="text-sm font-bold text-gray-800 truncate">{user.name}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/wishlist"
+                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
+                    >
+                      My Wishlist
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2.5 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           <Link to="/login" className="flex items-center gap-2 hover:text-[#5C614D] transition-colors">
@@ -95,7 +112,34 @@ export default function Navbar() {
             Sign In
           </Link>
         )}
+
+        {/* Mobile Menu Toggle Button */}
+        <button
+          className="md:hidden p-1 text-brand-text hover:text-brand-primary transition-colors"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-0 right-0 bg-[#F7F6F2] shadow-md border-b border-gray-200 md:hidden flex flex-col py-4 px-6 gap-4 z-40"
+          >
+            <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/discover" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Discover</Link>
+            <Link to="/wishlist" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
+            <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Planning</Link>
+            <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Inspiration</Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
