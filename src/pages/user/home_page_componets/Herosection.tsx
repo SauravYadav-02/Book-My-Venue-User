@@ -106,7 +106,7 @@ export default function HeroSection() {
                         </motion.span>
                     ))}
                 </h1>
-                
+
                 <motion.p
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -120,7 +120,7 @@ export default function HeroSection() {
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 3] }}
                     className="bg-white/10 backdrop-blur-2xl rounded-[3rem] p-4 md:p-4 flex flex-col md:flex-row items-center shadow-[0_30px_100px_rgba(0,0,0,0.5)] w-full max-w-4xl border border-white/20 gap-4 md:gap-0"
                 >
                     <div className="w-full md:flex-[1.5] flex flex-col text-left px-6 py-2 group cursor-pointer hover:bg-white/5 rounded-3xl transition-all">
@@ -131,9 +131,9 @@ export default function HeroSection() {
                             className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light"
                         />
                     </div>
-                    
+
                     <div className="hidden md:block w-px h-12 bg-white/20 mx-4"></div>
-                    
+
                     <div className="w-full md:flex-1 flex flex-col text-left px-6 py-2 group cursor-pointer hover:bg-white/5 rounded-3xl transition-all">
                         <span className="text-[11px] font-bold text-white/60 tracking-[0.2em] uppercase mb-1">Guests</span>
                         <input
@@ -142,8 +142,8 @@ export default function HeroSection() {
                             className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light"
                         />
                     </div>
-                    
-                    <motion.button 
+
+                    <motion.button
                         whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }}
                         whileTap={{ scale: 0.95 }}
                         className="bg-white text-black w-full md:w-auto md:px-14 h-16 md:h-20 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 group"
