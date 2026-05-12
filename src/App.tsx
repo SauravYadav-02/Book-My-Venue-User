@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage";
 
 import UserRegistration from "./pages/auth/UserRegistration";
+import VendorRegistration from "./pages/auth/VendorRegistration";
 
 // Public User Layout & Pages
 import UserLayout from "./components/layouts/UserLayout";
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/user-register" element={<UserRegistration />} />
+        <Route path="/register" element={<VendorRegistration />} />
 
         {/* Public / User End */}
         <Route path="/" element={<VenueProvider><UserLayout /></VenueProvider>}>
