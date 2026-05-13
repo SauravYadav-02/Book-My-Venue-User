@@ -269,7 +269,7 @@ export default function VenueDetails() {
                             </span>
                             <span className="flex items-center gap-1 text-sm font-semibold text-[#2d2d2d]">
                                 <Star size={14} className="fill-amber-400 text-amber-400" />
-                                {venue.averageRating || 0} ({venue.ratingCount || 0} reviews)
+                                {venue.averageRating ? venue.averageRating.toFixed(1) : '0.0'} ({venue.totalReviews ?? venue.ratingCount ?? 0} reviews)
                             </span>
                         </div>
 
@@ -342,7 +342,7 @@ export default function VenueDetails() {
                                 <span className="text-3xl font-serif font-bold text-[#2d2d2d]">
                                     {currencyFormatter.format(basePrice)}
                                 </span>
-                                <span className="text-sm text-gray-400 font-medium">/ hour</span>
+                                <span className="text-sm text-gray-400 font-medium">/ day</span>
                             </div>
 
                             {/* Event Date */}
@@ -362,6 +362,7 @@ export default function VenueDetails() {
                                         excludeDates={bookedDatesList}
                                         dayClassName={getDayClassName}
                                         placeholderText="Select a date"
+                                        dateFormat="dd/MM/yyyy"
                                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
                                     />
                                 </div>
@@ -397,7 +398,7 @@ export default function VenueDetails() {
                             {/* Price breakdown */}
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-500">
-                                    <span>Base Price</span>
+                                    <span>Base Price (per day)</span>
                                     <span className="text-[#2d2d2d] font-medium">
                                         {currencyFormatter.format(basePrice)}
                                     </span>
@@ -413,6 +414,31 @@ export default function VenueDetails() {
                                     <span>{currencyFormatter.format(total)}</span>
                                 </div>
                             </div>
+
+                            {/* Per-plate cost section */}
+                            {(venue.perPlateCost || venue.vegPrice || venue.nonVegPrice) && (
+                                <div className="bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 space-y-1.5">
+                                    <p className="text-xs font-bold text-green-700 uppercase tracking-wider">Per Plate Cost</p>
+                                    {venue.vegPrice != null && (
+                                        <div className="flex justify-between text-xs">
+                                            <span className="flex items-center gap-1 text-green-700">🟢 Veg</span>
+                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.vegPrice)}</span>
+                                        </div>
+                                    )}
+                                    {venue.nonVegPrice != null && (
+                                        <div className="flex justify-between text-xs">
+                                            <span className="flex items-center gap-1 text-red-600">🔴 Non-Veg</span>
+                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.nonVegPrice)}</span>
+                                        </div>
+                                    )}
+                                    {venue.perPlateCost != null && !venue.vegPrice && !venue.nonVegPrice && (
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-gray-500">Standard</span>
+                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.perPlateCost)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Upfront payment callout */}
                             <div className="bg-[#5C614D]/5 border border-[#5C614D]/10 rounded-xl px-3 py-2.5">

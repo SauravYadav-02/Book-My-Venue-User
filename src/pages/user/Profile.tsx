@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getUserBookings, type BookingResponse } from "../../services/bookingService";
 import { getUserById } from "../../services/userService";
 import type { UserProfile } from "../../types/user.types";
+import { format } from "date-fns";
 import { CalendarDays, MapPin, DollarSign, CheckCircle, XCircle } from "lucide-react";
 
 export default function Profile() {
@@ -58,6 +59,10 @@ export default function Profile() {
                 src={user.profilePhoto}
                 alt={user.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-3xl text-gray-500 font-serif">${user.name.charAt(0)}</div>`;
+                }}
               />
             ) : (
               <div className="w-full h-full bg-gray-200 flex items-center justify-center text-3xl text-gray-500 font-serif">
@@ -113,7 +118,7 @@ export default function Profile() {
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1.5">
                           <CalendarDays size={16} />
-                          {new Date(booking.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                          {format(new Date(booking.date), 'dd/MM/yyyy')}
                         </span>
                         <span className="flex items-center gap-1.5">
                           <MapPin size={16} />

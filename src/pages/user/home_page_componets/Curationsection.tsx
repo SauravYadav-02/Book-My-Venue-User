@@ -1,12 +1,16 @@
-import { ChevronDown, Filter } from "lucide-react";
 import { motion } from "framer-motion";
-
-import historicBarnImg from "../../../assets/historic_barn.png";
-import urbanLoftImg from "../../../assets/urban_loft.png";
-import secretGardenImg from "../../../assets/secret_garden.png";
+import { ChevronDown, Filter } from "lucide-react";
+import { useVenues } from "../../../store/Usevenues";
+import { getVenueImage } from "../../../services/VenueUserservice ";
 import VenueCard from "../../../components/user/VenueCard";
 
 export default function CurationSection() {
+    const { venues, loading, error } = useVenues();
+
+    // Show only first 3 venues for the curation section
+    const curatedVenues = venues.slice(0, 3);
+
+    if (loading) return null; // Or skeleton
     return (
         <section className="w-full max-w-7xl mx-auto px-6 py-16">
             <div className="flex flex-col md:flex-row items-center md:items-end justify-between border-b border-gray-200 pb-6 mb-10 text-center md:text-left">
@@ -61,33 +65,18 @@ export default function CurationSection() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <VenueCard
-                    image={historicBarnImg}
-                    type="BOUTIQUE"
-                    price="$250"
-                    name="The Oak Barn"
-                    location="Cotswolds, UK"
-                    capacity="150 cap."
-                    rating="4.8"
-                />
-                <VenueCard
-                    image={urbanLoftImg}
-                    type="BOUTIQUE"
-                    price="$180"
-                    name="Urban Loft Studio"
-                    location="London, UK"
-                    capacity="80 cap."
-                    rating="4.5"
-                />
-                <VenueCard
-                    image={secretGardenImg}
-                    type="GRAND HALL"
-                    price="$450"
-                    name="Secret Garden Estate"
-                    location="Surrey, UK"
-                    capacity="300 cap."
-                    rating="4.9"
-                />
+                {curatedVenues.map((venue) => (
+                    <VenueCard
+                        key={venue._id}
+                        image={getVenueImage(venue.mediaFiles)}
+                        type={venue.type}
+                        price={`₹${venue.pricePerDay}`}
+                        name={venue.name}
+                        location={`${venue.city}, ${venue.state}`}
+                        capacity={`${venue.capacity} cap.`}
+                        rating={venue.averageRating ? venue.averageRating.toFixed(1) : "New"}
+                    />
+                ))}
             </div>
         </section>
     );

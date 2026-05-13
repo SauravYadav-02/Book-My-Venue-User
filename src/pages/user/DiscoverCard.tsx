@@ -23,7 +23,7 @@ export default function DiscoverCard({
     price,
     capacity,
     type,
-    rating = 4.8,
+    rating = 0,
 }: DiscoverCardProps) {
     const navigate = useNavigate();
 
@@ -67,8 +67,14 @@ export default function DiscoverCard({
 
                 {/* Rating badge — bottom right */}
                 <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1 bg-white shadow-md px-2.5 py-1 rounded-full">
-                    <Star size={13} fill="#f59e0b" className="text-amber-400" />
-                    <span className="text-xs font-bold text-[#2d2d2d]">{rating}</span>
+                    {rating > 0 ? (
+                        <>
+                            <Star size={13} fill="#f59e0b" className="text-amber-400" />
+                            <span className="text-xs font-bold text-[#2d2d2d]">{rating.toFixed(1)}</span>
+                        </>
+                    ) : (
+                        <span className="text-[10px] font-bold text-[#5C614D] uppercase tracking-wide">New</span>
+                    )}
                 </div>
             </div>
 

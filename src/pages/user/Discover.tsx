@@ -133,7 +133,7 @@ export default function Discover() {
                                 price={venue.pricePerDay}
                                 capacity={venue.capacity}
                                 type={venue.type}
-                                rating={4.8}
+                                rating={venue.averageRating ?? 0}
                             />
                         ))}
                     </motion.div>

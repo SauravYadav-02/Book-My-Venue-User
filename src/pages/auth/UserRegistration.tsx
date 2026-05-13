@@ -49,17 +49,21 @@ function validateStep1(f: Step1Form): Step1Errors {
     else if (f.password !== f.confirmPassword)
         e.confirmPassword = "Passwords do not match.";
 
-    if (f.phone && !/^\d{10}$/.test(f.phone))
-        e.phone = "Must be a valid 10-digit number.";
+    if (!f.phone || !/^\d{10}$/.test(f.phone))
+        e.phone = "Phone number is required (10 digits).";
 
-    if (f.city && f.city.trim().length > 50)
+    if (!f.city || f.city.trim().length === 0)
+        e.city = "City is required.";
+    else if (f.city.trim().length > 50)
         e.city = "City cannot exceed 50 characters.";
 
-    if (f.address && f.address.trim().length > 200)
+    if (!f.address || f.address.trim().length === 0)
+        e.address = "Address is required.";
+    else if (f.address.trim().length > 200)
         e.address = "Address cannot exceed 200 characters.";
 
-    if (f.pinCode && !/^\d{6}$/.test(f.pinCode))
-        e.pinCode = "Must be a valid 6-digit pin code.";
+    if (!f.pinCode || !/^\d{6}$/.test(f.pinCode))
+        e.pinCode = "Valid 6-digit pin code is required.";
 
     return e;
 }
@@ -291,7 +295,8 @@ const UserRegistration: React.FC = () => {
     // Check if Step 1 is pristinely valid (for button state hint)
     const step1HasErrors =
         Object.values(errors).some(Boolean) ||
-        !form.name || !form.email || !form.password || !form.confirmPassword;
+        !form.name || !form.email || !form.password || !form.confirmPassword || !form.phone ||
+        !form.city || !form.address || !form.pinCode;
 
     return (
         <div className="min-h-screen bg-[#F7F6F2] font-sans">
@@ -419,16 +424,7 @@ const UserRegistration: React.FC = () => {
                                         onChange={handleChange}
                                     />
 
-                                    {/* ── Optional divider ─────────────── */}
-                                    <div className="sm:col-span-2 flex items-center gap-4 py-1">
-                                        <div className="flex-1 h-px bg-gray-100" />
-                                        <span className="text-[10px] tracking-widest text-gray-400 uppercase font-bold shrink-0">
-                                            Optional
-                                        </span>
-                                        <div className="flex-1 h-px bg-gray-100" />
-                                    </div>
-
-                                    {/* Phone */}
+                                    {/* Phone — required, placed before optional section */}
                                     <InputField
                                         id="reg-phone"
                                         label="Phone Number"
@@ -436,20 +432,24 @@ const UserRegistration: React.FC = () => {
                                         type="tel"
                                         value={form.phone}
                                         error={errors.phone}
-                                        placeholder="10-digit number"
+                                        placeholder="10-digit mobile number"
+                                        required
                                         onChange={handleChange}
                                     />
 
                                     {/* City */}
-                                    <InputField
-                                        id="reg-city"
-                                        label="City"
-                                        name="city"
-                                        value={form.city}
-                                        error={errors.city}
-                                        placeholder="Mumbai"
-                                        onChange={handleChange}
-                                    />
+                                        <InputField
+                                            id="reg-city"
+                                            label="City"
+                                            name="city"
+                                            value={form.city}
+                                            error={errors.city}
+                                            placeholder="Mumbai"
+                                            required
+                                            onChange={handleChange}
+                                        />
+
+                                    {/* Divider Removed — All Fields Mandatory */}
 
                                     {/* Address — full width */}
                                     <div className="sm:col-span-2">
@@ -462,6 +462,7 @@ const UserRegistration: React.FC = () => {
                                             placeholder="Street, apartment, area…"
                                             textarea
                                             rows={2}
+                                            required
                                             onChange={handleChange}
                                         />
                                     </div>
@@ -474,6 +475,7 @@ const UserRegistration: React.FC = () => {
                                         value={form.pinCode}
                                         error={errors.pinCode}
                                         placeholder="6-digit pin"
+                                        required
                                         onChange={handleChange}
                                     />
                                 </div>

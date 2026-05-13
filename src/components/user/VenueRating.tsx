@@ -214,7 +214,15 @@ export default function VenueRating({ venueId, venueName, onRatingUpdate }: Venu
                                                     />
                                                 ))}
                                                 <span className="text-[10px] text-gray-400 ml-2 font-medium">
-                                                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Just now'}
+                                                    {r.createdAt
+                                                        ? (() => {
+                                                            const d = new Date(r.createdAt);
+                                                            const dd = String(d.getDate()).padStart(2, '0');
+                                                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                                            const yyyy = d.getFullYear();
+                                                            return `${dd}/${mm}/${yyyy}`;
+                                                        })()
+                                                        : 'Just now'}
                                                 </span>
                                             </div>
                                         </div>

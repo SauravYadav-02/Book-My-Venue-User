@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Building2,
 } from "lucide-react";
+import { format } from "date-fns";
 import { simulatePayment, createPaymentBooking, type PaymentBooking, type CreateBookingPayload } from "../../services/paymentService";
 import { currencyFormatter } from "../../utils/currency";
 
@@ -119,7 +120,7 @@ export default function PaymentModal({
               <h2 className="text-2xl font-serif font-bold mt-1">{venueName}</h2>
               <div className="flex items-center gap-1.5 mt-2 text-white/70 text-sm">
                 <CalendarDays size={14} />
-                <span>{bookingPayload.date}</span>
+                <span>{format(new Date(bookingPayload.date), 'dd/MM/yyyy')}</span>
               </div>
             </div>
 

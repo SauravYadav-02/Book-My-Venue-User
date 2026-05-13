@@ -15,6 +15,9 @@ export interface Venue {
     capacity: number;
     description?: string;
     pricePerDay: number;
+    perPlateCost?: number | null;
+    vegPrice?: number | null;
+    nonVegPrice?: number | null;
     address?: string;
     city: string;
     state: string;
@@ -29,6 +32,7 @@ export interface Venue {
     adminDescription?: string;
     averageRating?: number;
     ratingCount?: number;
+    totalReviews?: number;
     reviews?: Review[];
     createdAt: string;
     updatedAt: string;
