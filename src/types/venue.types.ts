@@ -15,7 +15,6 @@ export interface Venue {
     capacity: number;
     description?: string;
     pricePerDay: number;
-    perPlateCost?: number | null;
     vegPrice?: number | null;
     nonVegPrice?: number | null;
     address?: string;

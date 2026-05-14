@@ -118,6 +118,17 @@ export default function VenueDetails() {
             return;
         }
 
+        if (venue?.availableFrom) {
+            const availableFromDate = new Date(venue.availableFrom);
+            availableFromDate.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(eventDate);
+            selectedDate.setHours(0, 0, 0, 0);
+            if (selectedDate < availableFromDate) {
+                toast.error("Venue is not open for that date.");
+                return;
+            }
+        }
+
         const userId = localStorage.getItem("userId");
         if (!userId) {
             toast.error("Please login to book a venue");
@@ -358,7 +369,7 @@ export default function VenueDetails() {
                                     <DatePicker
                                         selected={eventDate}
                                         onChange={handleDateChange}
-                                        minDate={new Date()}
+                                        minDate={venue.availableFrom ? new Date(Math.max(new Date().getTime(), new Date(venue.availableFrom).getTime())) : new Date()}
                                         excludeDates={bookedDatesList}
                                         dayClassName={getDayClassName}
                                         placeholderText="Select a date"
@@ -415,8 +426,8 @@ export default function VenueDetails() {
                                 </div>
                             </div>
 
-                            {/* Per-plate cost section */}
-                            {(venue.perPlateCost || venue.vegPrice || venue.nonVegPrice) && (
+                            {/* Per-plate cost section (veg / non-veg only) */}
+                            {(venue.vegPrice || venue.nonVegPrice) && (
                                 <div className="bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 space-y-1.5">
                                     <p className="text-xs font-bold text-green-700 uppercase tracking-wider">Per Plate Cost</p>
                                     {venue.vegPrice != null && (
@@ -429,12 +440,6 @@ export default function VenueDetails() {
                                         <div className="flex justify-between text-xs">
                                             <span className="flex items-center gap-1 text-red-600">🔴 Non-Veg</span>
                                             <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.nonVegPrice)}</span>
-                                        </div>
-                                    )}
-                                    {venue.perPlateCost != null && !venue.vegPrice && !venue.nonVegPrice && (
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-gray-500">Standard</span>
-                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.perPlateCost)}</span>
                                         </div>
                                     )}
                                 </div>

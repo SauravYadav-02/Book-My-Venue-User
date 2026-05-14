@@ -3,7 +3,7 @@ import { getUserBookings, type BookingResponse } from "../../services/bookingSer
 import { getUserById } from "../../services/userService";
 import type { UserProfile } from "../../types/user.types";
 import { format } from "date-fns";
-import { CalendarDays, MapPin, DollarSign, CheckCircle, XCircle } from "lucide-react";
+import { CalendarDays, MapPin, CheckCircle, XCircle } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -89,11 +89,11 @@ export default function Profile() {
           </div>
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center text-green-500">
-              <DollarSign size={24} />
+              <span className="text-2xl font-bold">₹</span>
             </div>
             <div>
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Total Spent</p>
-              <p className="text-3xl font-serif text-[#2d2d2d] mt-1">${bookingData?.totalSpent?.toLocaleString() || 0}</p>
+              <p className="text-3xl font-serif text-[#2d2d2d] mt-1">₹{bookingData?.totalSpent?.toLocaleString() || 0}</p>
             </div>
           </div>
         </div>
