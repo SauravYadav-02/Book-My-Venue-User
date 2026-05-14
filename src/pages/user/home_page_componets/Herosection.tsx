@@ -1,21 +1,23 @@
 import { Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-
 const images = [
-    "/images/hero/wedding.png",
-    "/images/hero/retreat.png",
-    "/images/hero/creative.png",
+    "/images/hero/wedding_bg.png",
+    "/images/hero/birthday_bg.png",
+    "/images/hero/rooftop_bg.png",
+    "/images/hero/anniversary_bg.png",
 ];
 
 export default function HeroSection() {
-    const [currentImage, setCurrentImage] = useState(0);
+    const [slideIndex, setSlideIndex] = useState(0);
     const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+
+    const currentImage = Math.abs(slideIndex % images.length);
 
     useEffect(() => {
         const timer = setInterval(() => {
             setDirection(1);
-            setCurrentImage((prev) => (prev + 1) % images.length);
+            setSlideIndex((prev) => prev + 1);
         }, 6000);
         return () => clearInterval(timer);
     }, []);
@@ -58,12 +60,12 @@ export default function HeroSection() {
     const words = sentence.split(" ");
 
     return (
-        <section className="relative w-full min-h-screen md:min-h-[95vh] flex flex-col items-center justify-center text-center overflow-hidden bg-black">
+        <section className="relative w-full min-h-screen flex flex-col items-center justify-center text-center overflow-hidden bg-black">
             {/* Background Image Slider with Ken Burns & Slide Effect */}
             <div className="absolute inset-0 z-0">
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
-                        key={currentImage}
+                        key={slideIndex}
                         custom={direction}
                         variants={variants}
                         initial="enter"
@@ -155,16 +157,17 @@ export default function HeroSection() {
 
                 {/* Progress-based Indicators */}
                 <div className="absolute bottom-12 flex gap-4">
-                    {images.map((_, index) => (
+                    {images.map((_, idx) => (
                         <div
-                            key={index}
+                            key={idx}
                             className="relative h-1 w-12 bg-white/20 rounded-full overflow-hidden cursor-pointer"
                             onClick={() => {
-                                setDirection(index > currentImage ? 1 : -1);
-                                setCurrentImage(index);
+                                const newIndex = slideIndex + (idx - currentImage);
+                                setDirection(idx > currentImage ? 1 : -1);
+                                setSlideIndex(newIndex);
                             }}
                         >
-                            {currentImage === index && (
+                            {currentImage === idx && (
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: "100%" }}
