@@ -1,7 +1,23 @@
-const BASE_URL = "http://localhost:3000/venues";
-export const MEDIA_BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:3000/venues";
+const BASE_URL = "http://10.113.216.96:3000/venues";
+// export const MEDIA_BASE_URL = "http://localhost:3000";
+export const MEDIA_BASE_URL = "http://10.113.216.96:3000";
 
 import { type Venue } from "../types/venue.types";
+
+export interface PaginationData {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+}
+
+export interface DiscoveryResponse {
+    venues: Venue[];
+    pagination: PaginationData;
+}
 
 export const getVenueImage = (mediaFiles: string[]): string => {
     return mediaFiles?.[0] ? `${MEDIA_BASE_URL}/${mediaFiles[0]}` : "/placeholder.jpg";
@@ -18,6 +34,32 @@ export const getAllVenues = async (): Promise<Venue[]> => {
 export const getApprovedVenues = async (): Promise<Venue[]> => {
     const venues = await getAllVenues();
     return venues.filter((v) => v.status === "approved");
+};
+
+// ✅ Discover Venues (Paginated, Searchable, Filterable)
+export const discoverVenues = async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    city?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    capacity?: number;
+    sort?: string;
+    amenities?: string;
+    events?: string;
+} = {}): Promise<DiscoveryResponse> => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+            query.append(key, value.toString());
+        }
+    });
+
+    const res = await fetch(`${BASE_URL}/discover?${query.toString()}`);
+    if (!res.ok) throw new Error("Failed to discover venues");
+    return res.json();
 };
 
 // ✅ Get Single Venue

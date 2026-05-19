@@ -284,6 +284,22 @@ export default function VenueDetails() {
                             </span>
                         </div>
 
+                        {/* Categories & Event Types */}
+                        {(venue.venueTypes?.length || venue.eventsSupported?.length) && (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                {venue.venueTypes && venue.venueTypes.map((t) => (
+                                    <span key={t} className="bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full">
+                                        {t}
+                                    </span>
+                                ))}
+                                {venue.eventsSupported && venue.eventsSupported.map((ev) => (
+                                    <span key={ev} className="bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium px-3 py-1 rounded-full">
+                                        {ev}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
                         <h1 className="text-4xl md:text-5xl font-serif text-[#2d2d2d] leading-tight">
                             {venue.name}
                         </h1>
@@ -346,8 +362,19 @@ export default function VenueDetails() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="lg:col-span-1 sticky top-28"
                 >
-                    <div className="bg-white rounded-3xl shadow-[0_4px_40px_rgb(0,0,0,0.08)] border border-gray-100 overflow-hidden">
-                        <div className="p-6 space-y-5">
+                    <div className="bg-white rounded-3xl shadow-[0_4px_40px_rgb(0,0,0,0.08)] border border-gray-100 overflow-hidden relative">
+                        {!venue.isSubscriptionActive && (
+                            <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center p-8 text-center">
+                                <div className="bg-white shadow-2xl rounded-2xl p-6 border border-red-100">
+                                    <ShieldCheck size={40} className="text-red-500 mx-auto mb-4" />
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Booking Unavailable</h3>
+                                    <p className="text-sm text-gray-500 leading-relaxed">
+                                        Venue is not available for booking yet.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        <div className={`p-6 space-y-5 ${!venue.isSubscriptionActive ? "opacity-40 grayscale pointer-events-none" : ""}`}>
                             {/* Price header */}
                             <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-serif font-bold text-[#2d2d2d]">
@@ -374,6 +401,7 @@ export default function VenueDetails() {
                                         dayClassName={getDayClassName}
                                         placeholderText="Select a date"
                                         dateFormat="dd/MM/yyyy"
+                                        disabled={!venue.isSubscriptionActive}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
                                     />
                                 </div>
@@ -392,6 +420,7 @@ export default function VenueDetails() {
                                     <select
                                         value={timeSlot}
                                         onChange={(e) => setTimeSlot(e.target.value)}
+                                        disabled={!venue.isSubscriptionActive}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
                                     >
                                         {TIME_SLOTS.map((slot) => (
@@ -462,10 +491,12 @@ export default function VenueDetails() {
                             <button
                                 id="book-venue-btn"
                                 onClick={handleBooking}
-                                disabled={isBooking || !eventDate || isDateBooked(eventDate)}
+                                disabled={isBooking || !eventDate || isDateBooked(eventDate) || !venue.isSubscriptionActive}
                                 className="w-full bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-gray-400 text-white py-4 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg shadow-[#5C614D]/20 hover:shadow-[#5C614D]/40 hover:-translate-y-0.5 transform"
                             >
-                                {isBooking ? "Creating Booking..." : "Book & Pay Upfront"}
+                                {!venue.isSubscriptionActive 
+                                    ? "Not available for booking" 
+                                    : isBooking ? "Creating Booking..." : "Book & Pay Upfront"}
                             </button>
 
                             <p className="text-center text-xs text-gray-400 font-medium tracking-wide uppercase">

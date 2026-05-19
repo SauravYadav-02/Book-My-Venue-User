@@ -303,15 +303,6 @@ const LoginPage: React.FC = () => {
                                 Register as User
                             </Link>
                         </p>
-                        <p>
-                            Are you a venue owner?{" "}
-                            <Link
-                                to="/register"
-                                className="text-stone-800 font-semibold hover:underline underline-offset-2"
-                            >
-                                Register as Vendor
-                            </Link>
-                        </p>
                     </div>
                 </div>
             </div>

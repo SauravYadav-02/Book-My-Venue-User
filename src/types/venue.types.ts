@@ -12,6 +12,8 @@ export interface Venue {
     vendorId: string;
     name: string;
     type?: string;
+    venueTypes?: string[];
+    eventsSupported?: string[];
     capacity: number;
     description?: string;
     pricePerDay: number;
@@ -28,6 +30,7 @@ export interface Venue {
     availableFrom?: string;
     mediaFiles: string[];
     status: "pending" | "approved" | "rejected";
+    isSubscriptionActive?: boolean;
     adminDescription?: string;
     averageRating?: number;
     ratingCount?: number;

@@ -8,9 +8,16 @@ const images = [
     "/images/hero/anniversary_bg.png",
 ];
 
-export default function HeroSection() {
+interface HeroSectionProps {
+    onSearch?: (search: string, capacity: string) => void;
+}
+
+export default function HeroSection({ onSearch }: HeroSectionProps) {
     const [slideIndex, setSlideIndex] = useState(0);
     const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+
+    const [location, setLocation] = useState("");
+    const [guests, setGuests] = useState("");
 
     const currentImage = Math.abs(slideIndex % images.length);
 
@@ -130,6 +137,13 @@ export default function HeroSection() {
                         <input
                             type="text"
                             placeholder="Where are you going?"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    if (onSearch) onSearch(location, guests);
+                                }
+                            }}
                             className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light"
                         />
                     </div>
@@ -139,15 +153,27 @@ export default function HeroSection() {
                     <div className="w-full md:flex-1 flex flex-col text-left px-6 py-2 group cursor-pointer hover:bg-white/5 rounded-3xl transition-all">
                         <span className="text-[11px] font-bold text-white/60 tracking-[0.2em] uppercase mb-1">Guests</span>
                         <input
-                            type="text"
+                            type="number"
                             placeholder="Set capacity"
-                            className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light"
+                            value={guests}
+                            onChange={(e) => setGuests(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    if (onSearch) onSearch(location, guests);
+                                }
+                            }}
+                            className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light no-spinner"
                         />
                     </div>
 
                     <motion.button
                         whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                            if (onSearch) {
+                                onSearch(location, guests);
+                            }
+                        }}
                         className="bg-white text-black w-full md:w-auto md:px-14 h-16 md:h-20 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 group"
                     >
                         <Search size={22} className="mr-3 transition-transform group-hover:rotate-12" />

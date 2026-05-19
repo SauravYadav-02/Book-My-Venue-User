@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://10.113.216.96:3000";
 
 export interface PaymentBooking {
   _id: string;
@@ -62,4 +63,9 @@ export const simulatePayment = async (
 ): Promise<PayBookingResponse> => {
   const res = await axios.post(`${BASE_URL}/pay`, payload);
   return res.data;
+};
+
+export const getUserTransactions = async (userId: string): Promise<any> => {
+  const res = await axios.get(`${BASE_URL}/user/${userId}/payments`);
+  return res.data.payments;
 };
