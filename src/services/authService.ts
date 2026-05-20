@@ -9,9 +9,9 @@ export const loginUser = async (
     const url =
         role === "user"
             // ? "http://localhost:3000/users/login"
-            ? "http://10.113.216.96:3000/users/login"
+            ? "http://192.168.1.14:3000/users/login"
             // : "http://localhost:3000/vendors/login";
-            : "http://10.113.216.96:3000/vendors/login";
+            : "http://192.168.1.14:3000/vendors/login";
 
     try {
         const res = await axios.post<LoginResponse>(url, form);

@@ -23,7 +23,7 @@ async function test() {
         formData.append("licenseDoc", fs.createReadStream(dummyFile));
 
         // const res = await axios.post("http://localhost:3000/vendors/register", formData, {
-        const res = await axios.post("http://10.113.216.96:3000/vendors/register", formData, {
+        const res = await axios.post("http://192.168.1.14:3000/vendors/register", formData, {
             headers: {
                 ...formData.getHeaders(),
             }

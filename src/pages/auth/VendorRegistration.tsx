@@ -103,7 +103,7 @@ function validate(v: FormValues): Errors {
 // createVendor service  (mirror of vendorService.ts)
 // ─────────────────────────────────────────────────────────────────────────────
 // const API_URL = "http://localhost:3000/vendors/register";
-const API_URL = "http://10.113.216.96:3000/vendors/register";
+const API_URL = "http://192.168.1.14:3000/vendors/register";
 
 async function createVendor(data: FormValues): Promise<void> {
     const formData = new FormData();
