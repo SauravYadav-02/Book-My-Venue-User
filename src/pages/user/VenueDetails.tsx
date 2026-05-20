@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, Utensils } from "lucide-react";
 import { getVenueById, getVenueImage } from "../../services/VenueUserservice ";
 import { type Venue } from "../../types/venue.types";
 import { getBookedDatesForVenue } from "../../services/bookingService";
@@ -23,6 +23,13 @@ const TIME_SLOTS = [
     { label: "Full Day (08:00 – 20:00)", value: "fullday", hours: 12 },
 ];
 
+const SLOT_MULTIPLIERS: Record<string, number> = {
+    morning: 0.4,
+    afternoon: 0.45,
+    evening: 0.6,
+    fullday: 1.0,
+};
+
 export default function VenueDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -34,7 +41,10 @@ export default function VenueDetails() {
     // Booking form state
     const [eventDate, setEventDate] = useState<Date | null>(null);
     const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0].value);
+    const [guestCount, setGuestCount] = useState<number>(0);
+    const [foodType, setFoodType] = useState<string>("none");
     const [bookedDates, setBookedDates] = useState<string[]>([]);
+    const [activeBookings, setActiveBookings] = useState<{ date: string; selectedSlot: string }[]>([]);
     const [isBooking, setIsBooking] = useState(false);
 
     // Payment modal state
@@ -51,8 +61,13 @@ export default function VenueDetails() {
             const data = await getVenueById(id);
             setVenue(data);
 
-            const dates = await getBookedDatesForVenue(id);
-            setBookedDates(dates);
+            const datesData = await getBookedDatesForVenue(id);
+            if (datesData && typeof datesData === 'object' && 'bookedDates' in datesData) {
+                setBookedDates(datesData.bookedDates || []);
+                setActiveBookings(datesData.activeBookings || []);
+            } else if (Array.isArray(datesData)) {
+                setBookedDates(datesData);
+            }
 
         } catch (err: unknown) {
             setError((err as Error).message || "Failed to load venue");
@@ -89,6 +104,26 @@ export default function VenueDetails() {
         );
     };
 
+    const isSlotBooked = (date: Date | null, slotValue: string) => {
+        if (!date) return false;
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+        const slotsForDate = activeBookings
+            .filter((b) => b.date === formattedDate)
+            .map((b) => b.selectedSlot.toLowerCase());
+
+        if (slotsForDate.includes("fullday")) {
+            return true;
+        }
+        if (slotValue === "fullday" && slotsForDate.length > 0) {
+            return true;
+        }
+        return slotsForDate.includes(slotValue.toLowerCase());
+    };
+
     const handleDateChange = (date: Date | null) => {
         if (!date) {
             setEventDate(null);
@@ -100,6 +135,13 @@ export default function VenueDetails() {
             setEventDate(null);
         } else {
             setEventDate(date);
+            const currentSlotBooked = isSlotBooked(date, timeSlot);
+            if (currentSlotBooked) {
+                const availableSlot = TIME_SLOTS.find(slot => !isSlotBooked(date, slot.value));
+                if (availableSlot) {
+                    setTimeSlot(availableSlot.value);
+                }
+            }
         }
     };
 
@@ -115,6 +157,16 @@ export default function VenueDetails() {
 
         if (isDateBooked(eventDate)) {
             toast.error("This date is already booked. Please select another date.");
+            return;
+        }
+
+        if (isSlotBooked(eventDate, timeSlot)) {
+            toast.error("This slot is already booked for the selected date.");
+            return;
+        }
+
+        if (foodType !== "none" && guestCount <= 0) {
+            toast.error("Please enter a guest count greater than 0 for catering.");
             return;
         }
 
@@ -150,6 +202,17 @@ export default function VenueDetails() {
                 venueId: venue!._id,
                 date: formattedDate,
                 bookingAmount: total,
+                selectedSlot: timeSlot,
+                basePrice: basePrice,
+                slotMultiplier: multiplier,
+                calculatedVenueAmount: calculatedVenueAmount,
+                totalAmount: total,
+                selectedFoodType: foodType,
+                guestCount: guestCount,
+                perPlatePrice: perPlatePrice,
+                foodTotal: foodTotal,
+                venueAmount: calculatedVenueAmount,
+                finalAmount: total,
             });
 
             setShowPaymentModal(true);
@@ -168,15 +231,27 @@ export default function VenueDetails() {
     const handleModalClose = () => {
         setShowPaymentModal(false);
         setBookingPayload(null);
-        // Refresh booked dates so the newly booked date is marked
-        if (id) getBookedDatesForVenue(id).then(setBookedDates).catch(console.error);
+        if (id) {
+            getBookedDatesForVenue(id).then((datesData) => {
+                if (datesData && typeof datesData === 'object' && 'bookedDates' in datesData) {
+                    setBookedDates(datesData.bookedDates || []);
+                    setActiveBookings(datesData.activeBookings || []);
+                } else if (Array.isArray(datesData)) {
+                    setBookedDates(datesData);
+                }
+            }).catch(console.error);
+        }
     };
 
     // ── Derived pricing ──────────────────────────────────────────────
 
     const basePrice = venue?.pricePerDay ?? 0;
+    const multiplier = SLOT_MULTIPLIERS[timeSlot] ?? 1.0;
+    const calculatedVenueAmount = basePrice * multiplier;
+    const perPlatePrice = foodType === "veg" ? (venue?.vegPrice ?? 0) : foodType === "nonveg" ? (venue?.nonVegPrice ?? 0) : 0;
+    const foodTotal = guestCount * perPlatePrice;
     const serviceFee = 0; // Can be calculated later
-    const total = basePrice + serviceFee;
+    const total = calculatedVenueAmount + foodTotal + serviceFee;
 
     // ── Loading skeleton ─────────────────────────────────────────────
     if (loading) {
@@ -423,14 +498,74 @@ export default function VenueDetails() {
                                         disabled={!venue.isSubscriptionActive}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
                                     >
-                                        {TIME_SLOTS.map((slot) => (
-                                            <option key={slot.value} value={slot.value}>
-                                                {slot.label}
-                                            </option>
-                                        ))}
+                                        {TIME_SLOTS.map((slot) => {
+                                            const disabled = isSlotBooked(eventDate, slot.value);
+                                            return (
+                                                <option key={slot.value} value={slot.value} disabled={disabled}>
+                                                    {slot.label} {disabled ? "(Unavailable)" : ""}
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                 </div>
                             </div>
+
+                            {/* Food Catering Selection */}
+                            {(venue.vegPrice || venue.nonVegPrice) && (
+                                <>
+                                    {/* Guest Count */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                                            Guest Count
+                                        </label>
+                                        <div className="relative">
+                                            <Users
+                                                size={15}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                placeholder="Enter guest count"
+                                                value={guestCount || ""}
+                                                onChange={(e) => {
+                                                    const val = Math.max(0, parseInt(e.target.value) || 0);
+                                                    setGuestCount(val);
+                                                }}
+                                                disabled={!venue.isSubscriptionActive}
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Food Type */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                                            Food Type
+                                        </label>
+                                        <div className="relative">
+                                            <Utensils
+                                                size={15}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                            />
+                                            <select
+                                                value={foodType}
+                                                onChange={(e) => setFoodType(e.target.value)}
+                                                disabled={!venue.isSubscriptionActive}
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="none">None / No Food</option>
+                                                {venue.vegPrice != null && (
+                                                    <option value="veg">Veg ({currencyFormatter.format(venue.vegPrice)}/person)</option>
+                                                )}
+                                                {venue.nonVegPrice != null && (
+                                                    <option value="nonveg">Non-Veg ({currencyFormatter.format(venue.nonVegPrice)}/person)</option>
+                                                )}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             {/* Divider */}
                             <div className="border-t border-gray-100" />
@@ -438,41 +573,24 @@ export default function VenueDetails() {
                             {/* Price breakdown */}
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-500">
-                                    <span>Base Price (per day)</span>
+                                    <span>Venue Amount</span>
                                     <span className="text-[#2d2d2d] font-medium">
-                                        {currencyFormatter.format(basePrice)}
+                                        {currencyFormatter.format(calculatedVenueAmount)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between text-gray-500">
-                                    <span>Service Fee</span>
-                                    <span className="text-[#2d2d2d] font-medium">
-                                        {currencyFormatter.format(serviceFee)}
-                                    </span>
-                                </div>
+                                {foodType !== "none" && (
+                                    <div className="flex justify-between text-gray-500">
+                                        <span>Food Total</span>
+                                        <span className="text-[#2d2d2d] font-medium">
+                                            {currencyFormatter.format(foodTotal)}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between font-semibold text-[#2d2d2d] text-base pt-2 border-t border-gray-100">
-                                    <span>Total</span>
+                                    <span>Grand Total</span>
                                     <span>{currencyFormatter.format(total)}</span>
                                 </div>
                             </div>
-
-                            {/* Per-plate cost section (veg / non-veg only) */}
-                            {(venue.vegPrice || venue.nonVegPrice) && (
-                                <div className="bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 space-y-1.5">
-                                    <p className="text-xs font-bold text-green-700 uppercase tracking-wider">Per Plate Cost</p>
-                                    {venue.vegPrice != null && (
-                                        <div className="flex justify-between text-xs">
-                                            <span className="flex items-center gap-1 text-green-700">🟢 Veg</span>
-                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.vegPrice)}</span>
-                                        </div>
-                                    )}
-                                    {venue.nonVegPrice != null && (
-                                        <div className="flex justify-between text-xs">
-                                            <span className="flex items-center gap-1 text-red-600">🔴 Non-Veg</span>
-                                            <span className="font-semibold text-[#2d2d2d]">{currencyFormatter.format(venue.nonVegPrice)}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
 
                             {/* Upfront payment callout */}
                             <div className="bg-[#5C614D]/5 border border-[#5C614D]/10 rounded-xl px-3 py-2.5">

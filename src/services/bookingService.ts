@@ -20,13 +20,13 @@ export interface BookingResponse {
   totalBookings?: number;
 }
 
-export const getBookedDatesForVenue = async (venueId: string): Promise<string[]> => {
+export const getBookedDatesForVenue = async (venueId: string): Promise<any> => {
   try {
     const res = await axios.get(`${BASE_URL}/venue/${venueId}/booked-dates`);
-    return res.data.bookedDates;
+    return res.data;
   } catch (error) {
     console.error("Failed to fetch booked dates", error);
-    return [];
+    return { bookedDates: [], activeBookings: [] };
   }
 };
 

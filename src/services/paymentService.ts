@@ -26,6 +26,17 @@ export interface CreateBookingPayload {
   venueId: string;
   date: string;
   bookingAmount: number; // treated as totalBookingAmount by backend
+  selectedSlot?: string;
+  basePrice?: number;
+  slotMultiplier?: number;
+  calculatedVenueAmount?: number;
+  totalAmount?: number;
+  selectedFoodType?: string;
+  guestCount?: number;
+  perPlatePrice?: number;
+  foodTotal?: number;
+  venueAmount?: number;
+  finalAmount?: number;
 }
 
 export interface PayBookingPayload {
