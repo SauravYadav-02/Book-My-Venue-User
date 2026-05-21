@@ -6,8 +6,8 @@ import type {
     UserUpdateForm,
 } from "../types/user.types";
 
-// const BASE_URL = "http://localhost:3000/users";
-const BASE_URL = "http://192.168.1.14:3000/users";
+const BASE_URL = "http://localhost:3000/users";
+// const BASE_URL = "http://192.168.1.14:3000/users";
 
 // ── Helper: extract a readable message from axios errors ─────────────────
 const extractMessage = (error: unknown, fallback: string): never => {

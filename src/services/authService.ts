@@ -8,10 +8,10 @@ export const loginUser = async (
 ): Promise<LoginResponse> => {
     const url =
         role === "user"
-            // ? "http://localhost:3000/users/login"
-            ? "http://192.168.1.14:3000/users/login"
-            // : "http://localhost:3000/vendors/login";
-            : "http://192.168.1.14:3000/vendors/login";
+            ? "http://localhost:3000/users/login"
+            // ? "http://192.168.1.14:3000/users/login"
+            : "http://localhost:3000/vendors/login";
+            // : "http://192.168.1.14:3000/vendors/login";
     
     try {
         const res = await axios.post<LoginResponse>(url, form);

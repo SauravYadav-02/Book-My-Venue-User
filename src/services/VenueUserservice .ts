@@ -1,7 +1,7 @@
-// const BASE_URL = "http://localhost:3000/venues";
-const BASE_URL = "http://192.168.1.14:3000/venues";
-// export const MEDIA_BASE_URL = "http://localhost:3000";
-export const MEDIA_BASE_URL = "http://192.168.1.14:3000";
+const BASE_URL = "http://localhost:3000/venues";
+// const BASE_URL = "http://192.168.1.14:3000/venues";
+export const MEDIA_BASE_URL = "http://localhost:3000";
+// export const MEDIA_BASE_URL = "http://192.168.1.14:3000";
 
 import { type Venue } from "../types/venue.types";
 

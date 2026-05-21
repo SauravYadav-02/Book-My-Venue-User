@@ -1,8 +1,8 @@
 import axios from "axios";
 import type { Venue } from "../types/venue.types";
 
-// const BASE_URL = "http://localhost:3000/api/wishlist";
-const BASE_URL = "http://192.168.1.14:3000/api/wishlist";
+const BASE_URL = "http://localhost:3000/api/wishlist";
+// const BASE_URL = "http://192.168.1.14:3000/api/wishlist";
 
 // Helper to get auth headers
 const getHeaders = () => {

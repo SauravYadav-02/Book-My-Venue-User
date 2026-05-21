@@ -1,6 +1,6 @@
 import React, { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Mail, Lock, Sparkles } from "lucide-react";
 import type { LoginForm } from "../../types/authTypes";
 import { loginUser } from "../../services/authService";
@@ -67,12 +67,14 @@ const InputField: React.FC<InputFieldProps> = ({
 // ── Main Login Page ─────────────────────────────────────────────────
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const redirectUrl = searchParams.get("redirect") || "/";
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const userId = localStorage.getItem("userId");
-        if (userId) navigate("/");
-    }, [navigate]);
+        if (userId) navigate(redirectUrl);
+    }, [navigate, redirectUrl]);
 
     const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -109,7 +111,7 @@ const LoginPage: React.FC = () => {
             if ("user" in data) {
                 localStorage.setItem("userId", data.user._id);
                 toast.success("Welcome back! 🎉");
-                setTimeout(() => navigate("/"), 1000);
+                setTimeout(() => navigate(redirectUrl), 1000);
             }
         } catch {
             toast.error("Login failed. Please check your credentials.");
@@ -297,7 +299,7 @@ const LoginPage: React.FC = () => {
                         <p>
                             Don't have an account?{" "}
                             <Link
-                                to="/user-register"
+                                to={redirectUrl !== "/" ? `/user-register?redirect=${encodeURIComponent(redirectUrl)}` : "/user-register"}
                                 className="text-stone-800 font-semibold hover:underline underline-offset-2"
                             >
                                 Register as User

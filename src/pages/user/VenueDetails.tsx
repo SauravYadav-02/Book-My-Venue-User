@@ -184,7 +184,7 @@ export default function VenueDetails() {
         const userId = localStorage.getItem("userId");
         if (!userId) {
             toast.error("Please login to book a venue");
-            navigate("/login");
+            navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             return;
         }
 
