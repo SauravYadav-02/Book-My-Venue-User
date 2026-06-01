@@ -69,6 +69,11 @@ export default function Wishlist() {
                                 price={venue.pricePerDay}
                                 capacity={venue.capacity}
                                 type={venue.type}
+                                venueTypes={venue.venueTypes}
+                                eventsSupported={venue.eventsSupported}
+                                rating={venue.averageRating ?? 0}
+                                isSubscriptionActive={venue.isSubscriptionActive}
+                                isNew={venue.isNew}
                             />
                         ))}
                     </motion.div>

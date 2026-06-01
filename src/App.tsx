@@ -17,13 +17,16 @@ import VenueDetails from "./pages/user/VenueDetails";
 import Profile from "./pages/user/Profile";
 import Wishlist from "./pages/user/Wishlist";
 import Transactions from "./pages/user/Transactions";
+import Planning from "./pages/user/Planning";
 
 // Context
 import { VenueProvider } from "./store/Venuecontext";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Public / Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -39,6 +42,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="wishlist" element={<Wishlist />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="planning" element={<Planning />} />
         </Route>
 
 

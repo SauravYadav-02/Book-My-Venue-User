@@ -193,6 +193,16 @@ const UserRegistration: React.FC = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [isRedirecting, setIsRedirecting] = useState(false);
+
+    React.useEffect(() => {
+        const userId = localStorage.getItem("userId");
+        if (userId) {
+            setIsRedirecting(true);
+            navigate("/", { replace: true });
+        }
+    }, [navigate]);
+
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [stepKey, setStepKey] = useState(0); // triggers re-mount for animation
@@ -212,6 +222,14 @@ const UserRegistration: React.FC = () => {
 
     // Step 2 state
     const [photo, setPhoto] = useState<Step2State>({ file: null, previewUrl: null });
+
+    if (isRedirecting || localStorage.getItem("userId")) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F7F6F2]">
+                <div className="animate-spin h-8 w-8 border-4 border-[#4C5040] border-t-transparent rounded-full" />
+            </div>
+        );
+    }
 
     // ── Field change with real-time single-field validation ─────────────────
     const handleChange = useCallback(

@@ -1,9 +1,10 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Star, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 interface VenueCardProps {
+  venueId: string;
   image: string;
   type: string;
   venueTypes?: string[];
@@ -14,22 +15,25 @@ interface VenueCardProps {
   capacity: string;
   rating: string;
   amenities?: string[];
+  isNew?: boolean;
 }
 
 // memo() prevents re-render when parent re-renders but props haven't changed
 const VenueCard = memo(function VenueCard({
+  venueId,
   image,
   type,
   venueTypes,
-  eventsSupported,
   price,
   name,
   location,
   capacity,
   rating,
-  amenities
+  amenities,
+  isNew
 }: VenueCardProps) {
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
 
   // Safely parse amenities if they are stringified JSON
   let parsedAmenities: string[] = [];
@@ -46,14 +50,25 @@ const VenueCard = memo(function VenueCard({
   }
 
   return (
-    <motion.div
-      // No `initial` — avoids the opacity:0 flash on every re-render/re-mount
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => navigate('/discover')}
-      className="bg-white rounded-3xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => navigate(`/venue/${venueId}`)}
+      className="h-full"
     >
+      <motion.div
+        // No `initial` — avoids the opacity:0 flash on every re-render/re-mount
+        animate={isHovered ? { y: -5 } : { y: 0 }}
+        transition={{ duration: 0.2 }}
+        whileTap={{ scale: 0.98 }}
+        className="bg-white rounded-3xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full"
+      >
       <div className="relative h-60 rounded-2xl overflow-hidden mb-4 bg-gray-100">
+        {isNew && (
+          <span className="absolute top-4 left-4 z-10 bg-amber-400 text-stone-900 text-[10px] font-extrabold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-sm animate-pulse">
+            New
+          </span>
+        )}
         {/* Plain <img> — no framer-motion wrapper avoids animation conflicts */}
         <img
           src={image}
@@ -102,6 +117,7 @@ const VenueCard = memo(function VenueCard({
         )}
       </div>
     </motion.div>
+    </div>
   );
 });
 

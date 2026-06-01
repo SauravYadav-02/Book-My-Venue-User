@@ -262,6 +262,7 @@ export default function CurationSection({ searchQuery = "", capacityQuery = "" }
                         {venues.slice(0, 4).map((venue) => (
                             <VenueCard
                                 key={venue._id}
+                                venueId={venue._id}
                                 image={getVenueImage(venue.mediaFiles)}
                                 type={venue.type || "VENUE"}
                                 venueTypes={venue.venueTypes}
@@ -270,8 +271,9 @@ export default function CurationSection({ searchQuery = "", capacityQuery = "" }
                                 name={venue.name}
                                 location={`${venue.city || ''}, ${venue.state || ''}`}
                                 capacity={`${venue.capacity || 0} cap.`}
-                                rating={venue.averageRating ? venue.averageRating.toFixed(1) : "New"}
+                                rating={venue.averageRating ? venue.averageRating.toFixed(1) : "0.0"}
                                 amenities={venue.amenities}
+                                isNew={venue.isNew}
                             />
                         ))}
                     </div>

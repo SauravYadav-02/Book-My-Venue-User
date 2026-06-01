@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getUserTransactions } from "../../services/paymentService";
 import { format } from "date-fns";
-import { Receipt, CheckCircle, XCircle, Clock, Building2, ExternalLink } from "lucide-react";
+import { Receipt, CheckCircle, XCircle, Clock, Building2 } from "lucide-react";
 import { currencyFormatter } from "../../utils/currency";
 
 interface Transaction {
@@ -15,6 +15,7 @@ interface Transaction {
   transactionId: string;
   paymentTimestamp: string;
   description: string;
+  createdAt?: string;
 }
 
 export default function Transactions() {
@@ -24,7 +25,7 @@ export default function Transactions() {
   useEffect(() => {
     const fetchTransactions = async () => {
       const userId = localStorage.getItem("userId");
-      if (!userId) {
+      if (!userId || userId === "undefined" || userId === "null") {
         window.location.href = "/login";
         return;
       }

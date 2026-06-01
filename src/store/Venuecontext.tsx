@@ -58,7 +58,7 @@ export const VenueProvider = ({ children }: { children: ReactNode }) => {
         try {
             const { getWishlist } = await import("../services/wishlistService");
             const data = await getWishlist();
-            setWishlistIds(data.wishlist.map((v: any) => typeof v === 'string' ? v : v._id));
+            setWishlistIds(data.wishlist.map((v: any) => v ? (typeof v === 'string' ? v : v._id) : null).filter(Boolean));
         } catch (err) {
             console.error("Failed to fetch wishlist", err);
         }

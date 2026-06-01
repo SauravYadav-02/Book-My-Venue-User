@@ -36,6 +36,7 @@ export interface Venue {
     ratingCount?: number;
     totalReviews?: number;
     reviews?: Review[];
+    isNew?: boolean;
     createdAt: string;
     updatedAt: string;
 }

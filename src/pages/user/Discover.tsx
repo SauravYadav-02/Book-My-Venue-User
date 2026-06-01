@@ -2,8 +2,8 @@ import { Sparkles, ArrowRight, SearchX, ChevronLeft, ChevronRight, Search, MapPi
 import { getVenueImage } from "../../services/VenueUserservice ";
 import { useVenues } from "../../store/Usevenues";
 import DiscoverCard from "./DiscoverCard";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const CITIES_LIST = ["Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad"];
@@ -105,7 +105,7 @@ export default function Discover() {
         ) || initialCity;
     });
 
-    const [capacity, setCapacity] = useState(searchParams.get("capacity") || "");
+    const [capacity] = useState(searchParams.get("capacity") || "");
 
     const [category, setCategory] = useState(() => {
         const initialCategory = searchParams.get("category") || "";
@@ -385,6 +385,7 @@ export default function Discover() {
                                     eventsSupported={venue.eventsSupported}
                                     rating={venue.averageRating ?? 0}
                                     isSubscriptionActive={venue.isSubscriptionActive}
+                                    isNew={venue.isNew}
                                 />
                             ))}
                         </motion.div>

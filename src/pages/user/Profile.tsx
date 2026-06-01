@@ -13,7 +13,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       const userId = localStorage.getItem("userId");
-      if (!userId) {
+      if (!userId || userId === "undefined" || userId === "null") {
         window.location.href = "/login";
         return;
       }

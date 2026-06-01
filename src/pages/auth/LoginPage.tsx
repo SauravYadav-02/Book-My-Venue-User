@@ -70,14 +70,26 @@ const LoginPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const redirectUrl = searchParams.get("redirect") || "/";
     const [loading, setLoading] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     useEffect(() => {
         const userId = localStorage.getItem("userId");
-        if (userId) navigate(redirectUrl);
+        if (userId) {
+            setIsRedirecting(true);
+            navigate(redirectUrl, { replace: true });
+        }
     }, [navigate, redirectUrl]);
 
     const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+    if (isRedirecting || localStorage.getItem("userId")) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
+                <div className="animate-spin h-8 w-8 border-4 border-stone-800 border-t-transparent rounded-full" />
+            </div>
+        );
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });

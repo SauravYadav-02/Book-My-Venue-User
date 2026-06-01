@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     User, Mail, Phone, Building2, FileText, CheckCircle2, ArrowRight,
 } from "lucide-react";
@@ -340,11 +340,30 @@ const FIELDS: Field[] = [
 // Main Page  (mirror of VendorRegistrationForm.tsx — exact same JSX)
 // ─────────────────────────────────────────────────────────────────────────────
 export default function VendorRegistration() {
+    const navigate = useNavigate();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+
+    React.useEffect(() => {
+        const userId = localStorage.getItem("userId");
+        if (userId) {
+            setIsRedirecting(true);
+            navigate("/", { replace: true });
+        }
+    }, [navigate]);
+
     const [values, setValues] = useState<FormValues>(INIT);
     const [touched, setTouched] = useState<Touched>({});
     const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
     const errors = validate(values);
+
+    if (isRedirecting || localStorage.getItem("userId")) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full" />
+            </div>
+        );
+    }
 
     const set = (id: keyof FormValues, val: any) => {
         setValues(v => ({ ...v, [id]: val }));

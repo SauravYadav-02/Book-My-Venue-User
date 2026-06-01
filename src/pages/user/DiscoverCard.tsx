@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { MapPin, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { currencyFormatter } from "../../utils/currency";
@@ -17,6 +17,7 @@ interface DiscoverCardProps {
     eventsSupported?: string[];
     rating?: number;
     isSubscriptionActive?: boolean;
+    isNew?: boolean;
 }
 
 // memo() prevents re-render when parent state changes but props are identical
@@ -27,24 +28,31 @@ const DiscoverCard = memo(function DiscoverCard({
     location,
     price,
     capacity,
-    type,
-    venueTypes,
     eventsSupported,
     rating = 0,
     isSubscriptionActive = true,
+    isNew = false,
 }: DiscoverCardProps) {
     const navigate = useNavigate();
+    const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <motion.div
-            // No `initial` — avoids the opacity:0 flash on every re-mount during refetch
-            whileHover={isSubscriptionActive ? { y: -5, transition: { duration: 0.2 } } : {}}
-            className={`group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-400 flex flex-col ${
-                !isSubscriptionActive ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
-            }`}
-            style={{ borderRadius: "1.5rem" }}
+        <div
+            onMouseEnter={() => isSubscriptionActive && setIsHovered(true)}
+            onMouseLeave={() => isSubscriptionActive && setIsHovered(false)}
             onClick={() => isSubscriptionActive && navigate(`/venue/${venueId}`)}
+            className="h-full"
         >
+            <motion.div
+                // No `initial` — avoids the opacity:0 flash on every re-mount during refetch
+                animate={isHovered ? { y: -5 } : { y: 0 }}
+                transition={{ duration: 0.2 }}
+                whileTap={isSubscriptionActive ? { scale: 0.98 } : {}}
+                className={`group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col h-full ${
+                    !isSubscriptionActive ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
+                }`}
+                style={{ borderRadius: "1.5rem" }}
+            >
             {/* ── Image Container ─────────────────────────────── */}
             <div
                 className={`relative overflow-hidden m-3 flex-shrink-0 ${!isSubscriptionActive ? "grayscale" : ""}`}
@@ -70,19 +78,13 @@ const DiscoverCard = memo(function DiscoverCard({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
 
                 {/* Type tag — top left */}
-                {venueTypes && venueTypes.length > 0 ? (
+                {isNew && (
                     <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1 max-w-[70%]">
-                        {venueTypes.slice(0, 2).map((t) => (
-                            <span key={t} className="bg-emerald-500 text-white text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm">
-                                {t}
-                            </span>
-                        ))}
+                        <span className="bg-amber-400 text-stone-900 text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm animate-pulse">
+                            New
+                        </span>
                     </div>
-                ) : type ? (
-                    <span className="absolute top-3 left-3 z-10 bg-white/95 backdrop-blur-sm text-[#2d2d2d] text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-sm">
-                        {type}
-                    </span>
-                ) : null}
+                )}
 
                 {/* Wishlist button — top right */}
                 <div className="absolute top-3 right-3 z-10">
@@ -97,7 +99,7 @@ const DiscoverCard = memo(function DiscoverCard({
                             <span className="text-xs font-bold text-[#2d2d2d]">{rating.toFixed(1)}</span>
                         </>
                     ) : (
-                        <span className="text-[10px] font-bold text-[#5C614D] uppercase tracking-wide">New</span>
+                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">0.0</span>
                     )}
                 </div>
             </div>
@@ -169,6 +171,7 @@ const DiscoverCard = memo(function DiscoverCard({
                 </motion.button>
             </div>
         </motion.div>
+        </div>
     );
 });
 

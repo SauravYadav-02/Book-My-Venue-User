@@ -49,7 +49,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         }),
     };
 
-    const textVariants = {
+    const textVariants: any = {
         hidden: { opacity: 0, y: 20, filter: "blur(10px)" },
         visible: (i: number) => ({
             opacity: 1,

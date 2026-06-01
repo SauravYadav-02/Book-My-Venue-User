@@ -1,6 +1,5 @@
 const RATINGS_URL = "http://localhost:3000/ratings";
 // const RATINGS_URL = "http://192.168.1.14:3000/ratings";
-
 export type { Review } from "../types/venue.types";
 import { type Review } from "../types/venue.types";
 
