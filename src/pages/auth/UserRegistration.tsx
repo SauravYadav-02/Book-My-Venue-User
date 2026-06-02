@@ -219,6 +219,30 @@ const UserRegistration: React.FC = () => {
         pinCode: "",
     });
     const [errors, setErrors] = useState<Step1Errors>({});
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [activeTermsVersion, setActiveTermsVersion] = useState("");
+
+    React.useEffect(() => {
+        const fetchActiveTerms = async () => {
+            try {
+                const response = await fetch("http://localhost:3000/terms/active");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data?.success && data?.terms?.version) {
+                        setActiveTermsVersion(data.terms.version);
+                    } else {
+                        setActiveTermsVersion("1.0.0");
+                    }
+                } else {
+                    setActiveTermsVersion("1.0.0");
+                }
+            } catch (err) {
+                console.error("Failed to fetch active T&C:", err);
+                setActiveTermsVersion("1.0.0");
+            }
+        };
+        fetchActiveTerms();
+    }, []);
 
     // Step 2 state
     const [photo, setPhoto] = useState<Step2State>({ file: null, previewUrl: null });
@@ -287,6 +311,9 @@ const UserRegistration: React.FC = () => {
                 }
             });
 
+            // Append terms acceptance metadata
+            formData.append("acceptedTermsVersion", activeTermsVersion || "1.0.0");
+
             // Append the profile photo if it exists
             if (photo.file) {
                 console.log("APPENDING PHOTO:", photo.file.name, photo.file.type);
@@ -314,7 +341,8 @@ const UserRegistration: React.FC = () => {
     const step1HasErrors =
         Object.values(errors).some(Boolean) ||
         !form.name || !form.email || !form.password || !form.confirmPassword || !form.phone ||
-        !form.city || !form.address || !form.pinCode;
+        !form.city || !form.address || !form.pinCode ||
+        !acceptedTerms;
 
     return (
         <div className="min-h-screen bg-[#F7F6F2] font-sans">
@@ -496,6 +524,41 @@ const UserRegistration: React.FC = () => {
                                         required
                                         onChange={handleChange}
                                     />
+                                </div>
+
+                                {/* Terms & Conditions Checkbox */}
+                                <div className="mt-6 flex items-start gap-3 bg-stone-50/50 p-4 rounded-2xl border border-gray-150">
+                                    <input
+                                        type="checkbox"
+                                        id="reg-terms"
+                                        checked={acceptedTerms}
+                                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                        className="mt-1 w-4.5 h-4.5 rounded text-[#4C5040] focus:ring-[#4C5040]/30 border-gray-300 accent-[#4C5040] cursor-pointer"
+                                    />
+                                    <label htmlFor="reg-terms" className="text-xs font-semibold text-gray-500 cursor-pointer select-none leading-relaxed">
+                                        I agree to the{" "}
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toast("Please read our terms of use carefully.", { icon: "ℹ️" });
+                                            }}
+                                            className="text-[#4C5040] font-bold hover:underline"
+                                        >
+                                            Terms and Conditions
+                                        </a>{" "}
+                                        and{" "}
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toast("Your privacy is secure with us.", { icon: "🔒" });
+                                            }}
+                                            className="text-[#4C5040] font-bold hover:underline"
+                                        >
+                                            Privacy Policy
+                                        </a>.
+                                    </label>
                                 </div>
 
                                 {/* Next button */}
