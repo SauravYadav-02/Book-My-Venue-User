@@ -192,18 +192,18 @@ export default function Complaints() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] bg-stone-50/50 p-4 sm:p-6 lg:p-8 pt-32 font-sans">
+    <div className="flex flex-col min-h-[calc(100vh-80px)] bg-stone-50/50 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8 pt-32 font-sans">
       <Toaster />
 
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif text-stone-800 tracking-tight">Support & Complaints</h1>
           <p className="text-sm text-stone-500 mt-1">Raise support requests, report service issues, and chat with vendors.</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-2 bg-[#5C614D] hover:bg-[#4C5040] text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 mt-2"
+          className="self-start sm:self-auto inline-flex items-center justify-center gap-2 bg-[#5C614D] hover:bg-[#4C5040] text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 mt-2 sm:mt-3"
         >
           <Plus size={16} />
           File New Complaint
@@ -214,7 +214,7 @@ export default function Complaints() {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden min-h-[500px]">
         
         {/* Left Side: Complaints List */}
-        <div className={`lg:col-span-4 border-r border-stone-200 flex flex-col h-full ${selectedComplaint ? "hidden lg:flex" : "flex"}`}>
+        <div className={`lg:col-span-4 lg:border-r border-stone-200 flex flex-col h-full ${selectedComplaint ? "hidden lg:flex" : "flex"}`}>
           <div className="p-4 border-b border-stone-100 bg-stone-50/30">
             <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">Your Complaints</h2>
           </div>
@@ -371,7 +371,7 @@ export default function Complaints() {
       {/* --- File New Complaint Modal --- */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-200">
             
             <div className="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
               <h2 className="text-lg font-serif text-stone-800">File New Support Ticket</h2>
