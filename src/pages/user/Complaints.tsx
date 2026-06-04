@@ -16,12 +16,9 @@ import {
   Send, 
   Plus, 
   Paperclip, 
-  Clock, 
-  CheckCircle, 
   AlertCircle, 
   X,
   FileText,
-  ChevronRight,
   ArrowLeft
 } from "lucide-react";
 
@@ -195,7 +192,7 @@ export default function Complaints() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] bg-stone-50/50 p-4 sm:p-6 lg:p-8 font-sans">
+    <div className="flex flex-col min-h-[calc(100vh-80px)] bg-stone-50/50 p-4 sm:p-6 lg:p-8 pt-32 font-sans">
       <Toaster />
 
       {/* Header Panel */}
@@ -206,7 +203,7 @@ export default function Complaints() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95"
+          className="inline-flex items-center justify-center gap-2 bg-[#5C614D] hover:bg-[#4C5040] text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 mt-2"
         >
           <Plus size={16} />
           File New Complaint
@@ -313,7 +310,7 @@ export default function Complaints() {
                       <div key={msg._id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
                           isOwn 
-                            ? "bg-stone-800 text-white rounded-br-none" 
+                            ? "bg-[#5C614D] text-white rounded-br-none" 
                             : "bg-white border border-stone-200/70 text-stone-800 rounded-bl-none"
                         }`}>
                           <div className="flex items-center justify-between gap-4 mb-1">
@@ -347,7 +344,7 @@ export default function Complaints() {
                   <button
                     type="submit"
                     disabled={!newMessage.trim() || selectedComplaint.status === "Closed"}
-                    className="bg-stone-800 hover:bg-stone-900 disabled:bg-stone-200 disabled:cursor-not-allowed text-white p-2.5 rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95"
+                    className="bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-stone-200 disabled:cursor-not-allowed text-white p-2.5 rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95"
                   >
                     <Send size={16} />
                   </button>
@@ -471,7 +468,7 @@ export default function Complaints() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-200 disabled:cursor-not-allowed text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md active:scale-95 transition-all"
+                  className="flex-1 bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-stone-200 disabled:cursor-not-allowed text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide shadow-md active:scale-95 transition-all"
                 >
                   {loading ? "Submitting..." : "Submit Complaint"}
                 </button>
