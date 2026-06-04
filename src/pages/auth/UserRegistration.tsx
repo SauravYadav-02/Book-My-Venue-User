@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
-import { CheckCircle2, Camera, Upload, ArrowRight, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Camera, Upload, ArrowRight, ArrowLeft, X } from "lucide-react";
 import { registerUser } from "../../services/userService";
 
 // ── Form state types ──────────────────────────────────────────────────────────
@@ -188,6 +188,34 @@ const StepIndicator: React.FC<{ current: number }> = ({ current }) => (
     </div>
 );
 
+
+const DEFAULT_PRIVACY = `Privacy Policy
+
+Last Updated: June 4, 2026
+
+At Book My Venue, your privacy is our top priority. This Privacy Policy describes how we collect, use, process, and share your personal information.
+
+1. Information We Collect
+- **Personal Information**: Name, email address, phone number, physical address, and profile photo when you register.
+- **Booking & Payment Details**: Information related to the venues you search for, book, and payment history.
+- **Technical Information**: IP addresses, browser types, device information, and platform interaction logs.
+
+2. How We Use Your Information
+- To facilitate account creation and user authentication.
+- To process, manage, and confirm your venue bookings.
+- To communicate updates, booking confirmations, and support queries.
+- To improve our services, layout, and user experience.
+
+3. Sharing Your Information
+- We share your details with Venue Vendors to complete and confirm bookings. We do not sell or lease your personal information to third parties.
+- We may share data with legal authorities if required by law or to protect our rights.
+
+4. Data Security
+We implement robust administrative, technical, and physical security measures to safeguard your personal data from unauthorized access or disclosure.
+
+5. Your Choices & Rights
+You can access, correct, or delete your account information at any time through your profile settings or by contacting our support team.`;
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const UserRegistration: React.FC = () => {
     const navigate = useNavigate();
@@ -221,24 +249,30 @@ const UserRegistration: React.FC = () => {
     const [errors, setErrors] = useState<Step1Errors>({});
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [activeTermsVersion, setActiveTermsVersion] = useState("");
+    const [activeTermsContent, setActiveTermsContent] = useState("");
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    const [isLoadingTerms, setIsLoadingTerms] = useState(false);
+    const [termsError, setTermsError] = useState("");
 
     React.useEffect(() => {
         const fetchActiveTerms = async () => {
+            setIsLoadingTerms(true);
+            setTermsError("");
             try {
                 const response = await fetch("http://localhost:3000/terms/active");
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data?.success && data?.terms?.version) {
-                        setActiveTermsVersion(data.terms.version);
-                    } else {
-                        setActiveTermsVersion("1.0.0");
-                    }
+                const data = await response.json();
+                if (response.ok && data?.success && data?.terms) {
+                    setActiveTermsVersion(data.terms.version);
+                    setActiveTermsContent(data.terms.content);
                 } else {
-                    setActiveTermsVersion("1.0.0");
+                    setTermsError(data?.message || "No active terms and conditions are published yet.");
                 }
             } catch (err) {
                 console.error("Failed to fetch active T&C:", err);
-                setActiveTermsVersion("1.0.0");
+                setTermsError("Failed to fetch terms from the server. Please try again later.");
+            } finally {
+                setIsLoadingTerms(false);
             }
         };
         fetchActiveTerms();
@@ -537,27 +571,27 @@ const UserRegistration: React.FC = () => {
                                     />
                                     <label htmlFor="reg-terms" className="text-xs font-semibold text-gray-500 cursor-pointer select-none leading-relaxed">
                                         I agree to the{" "}
-                                        <a
-                                            href="#"
+                                        <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                toast("Please read our terms of use carefully.", { icon: "ℹ️" });
+                                                setShowTermsModal(true);
                                             }}
-                                            className="text-[#4C5040] font-bold hover:underline"
+                                            className="text-[#4C5040] font-bold hover:underline bg-transparent border-none p-0 inline cursor-pointer"
                                         >
                                             Terms and Conditions
-                                        </a>{" "}
+                                        </button>{" "}
                                         and{" "}
-                                        <a
-                                            href="#"
+                                        <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                toast("Your privacy is secure with us.", { icon: "🔒" });
+                                                setShowPrivacyModal(true);
                                             }}
-                                            className="text-[#4C5040] font-bold hover:underline"
+                                            className="text-[#4C5040] font-bold hover:underline bg-transparent border-none p-0 inline cursor-pointer"
                                         >
                                             Privacy Policy
-                                        </a>.
+                                        </button>.
                                     </label>
                                 </div>
 
@@ -750,6 +784,115 @@ const UserRegistration: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Terms and Conditions Modal */}
+            {showTermsModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                        onClick={() => setShowTermsModal(false)}
+                    />
+                    {/* Modal container */}
+                    <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden animate-modal-in">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-[#F7F6F2]/30">
+                            <div>
+                                <h3 className="text-lg font-bold text-[#2d2d2d] font-serif">Terms & Conditions</h3>
+                                <p className="text-[10px] text-[#4C5040] font-bold uppercase tracking-wider mt-0.5">
+                                    {isLoadingTerms ? "Loading..." : termsError ? "Unavailable" : `Version ${activeTermsVersion || "1.0.0"}`}
+                                </p>
+                            </div>
+                            <button 
+                                type="button"
+                                onClick={() => setShowTermsModal(false)}
+                                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                            >
+                                <X size={18} strokeWidth={2.5} />
+                            </button>
+                        </div>
+                        {/* Body */}
+                        <div className="flex-1 overflow-y-auto px-6 py-6 text-xs sm:text-sm text-gray-600 whitespace-pre-line leading-relaxed font-medium custom-scrollbar">
+                            {isLoadingTerms ? (
+                                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                                    <div className="animate-spin h-6 w-6 border-2 border-[#4C5040] border-t-transparent rounded-full" />
+                                    <span className="text-sm font-semibold text-gray-400">Loading terms from server...</span>
+                                </div>
+                            ) : termsError ? (
+                                <div className="text-center py-8 text-red-500 font-semibold">
+                                    {termsError}
+                                </div>
+                            ) : (
+                                activeTermsContent
+                            )}
+                        </div>
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-gray-100 bg-[#F7F6F2]/30 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowTermsModal(false)}
+                                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+                            >
+                                Close
+                            </button>
+                            {!isLoadingTerms && !termsError && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAcceptedTerms(true);
+                                        setShowTermsModal(false);
+                                    }}
+                                    className="px-5 py-2.5 rounded-xl bg-[#4C5040] hover:bg-[#3c4032] text-[#F7F6F2] text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer"
+                                >
+                                    I Accept
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Privacy Policy Modal */}
+            {showPrivacyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                        onClick={() => setShowPrivacyModal(false)}
+                    />
+                    {/* Modal container */}
+                    <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden animate-modal-in">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-[#F7F6F2]/30">
+                            <div>
+                                <h3 className="text-lg font-bold text-[#2d2d2d] font-serif">Privacy Policy</h3>
+                                <p className="text-[10px] text-[#4C5040] font-bold uppercase tracking-wider mt-0.5">Effective June 2026</p>
+                            </div>
+                            <button 
+                                type="button"
+                                onClick={() => setShowPrivacyModal(false)}
+                                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                            >
+                                <X size={18} strokeWidth={2.5} />
+                            </button>
+                        </div>
+                        {/* Body */}
+                        <div className="flex-1 overflow-y-auto px-6 py-6 text-xs sm:text-sm text-gray-600 whitespace-pre-line leading-relaxed font-medium custom-scrollbar">
+                            {DEFAULT_PRIVACY}
+                        </div>
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-gray-100 bg-[#F7F6F2]/30 flex items-center justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowPrivacyModal(false)}
+                                className="px-5 py-2.5 rounded-xl bg-[#4C5040] hover:bg-[#3c4032] text-[#F7F6F2] text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
