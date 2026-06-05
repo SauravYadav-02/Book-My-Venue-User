@@ -23,7 +23,7 @@ export interface Complaint {
     name: string;
     city: string;
   };
-  status: "Open" | "In Progress" | "Resolved" | "Closed";
+  status: "Open" | "In Progress" | "Resolved" | "Closed" | "Rejected";
   attachments: string[];
   createdAt: string;
   updatedAt: string;
