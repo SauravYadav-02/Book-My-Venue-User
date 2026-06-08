@@ -20,7 +20,7 @@ export interface DiscoveryResponse {
 }
 
 export const getVenueImage = (mediaFiles: string[]): string => {
-    return mediaFiles?.[0] ? `${MEDIA_BASE_URL}/${mediaFiles[0]}` : "/placeholder.jpg";
+    return mediaFiles?.[0] ? `${MEDIA_BASE_URL}/${mediaFiles[0].replace(/\\/g, "/")}` : "/placeholder.jpg";
 };
 
 // ✅ Get All Venues

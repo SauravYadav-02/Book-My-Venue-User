@@ -22,7 +22,7 @@ interface PaymentModalProps {
   onPaymentComplete: (updatedBooking: PaymentBooking) => void;
 }
 
-type PaymentStep = "summary" | "confirmation" | "processing" | "success" | "failed";
+type PaymentStep = "summary" | "confirmation" | "processing" | "success" | "failed" | "cancelled";
 
 export default function PaymentModal({
   bookingPayload,
@@ -59,9 +59,21 @@ export default function PaymentModal({
   };
 
   // 3. cancelling payment
-  const handleCancelPayment = () => {
-    // If cancelled before payment confirmation, just close the modal without creating a booking.
-    onClose();
+  const handleCancelPayment = async () => {
+    setStep("processing");
+    try {
+      // Create the booking first
+      const createResult = await createPaymentBooking(bookingPayload);
+      const bookingId = createResult.booking._id;
+
+      // Simulate payment outcome as cancelled
+      const result = await simulatePayment({ bookingId, outcome: "cancelled" });
+      setPaidBooking(result.booking);
+      setStep("cancelled");
+    } catch (err) {
+      console.error(err);
+      setStep("failed");
+    }
   };
 
   // 4. handling final payment status
@@ -354,6 +366,62 @@ export default function PaymentModal({
                   className="flex-1 border border-gray-200 text-gray-600 py-3.5 rounded-2xl font-semibold text-sm hover:bg-gray-50 transition-colors duration-200"
                 >
                   Cancel
+                </button>
+                <button
+                  id="payment-retry-btn"
+                  onClick={handleRetry}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#5C614D] hover:bg-[#4C5040] text-white py-3.5 rounded-2xl font-semibold text-sm transition-all duration-200"
+                >
+                  <RotateCcw size={15} />
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP: CANCELLED ───────────────────────────────────────── */}
+        {step === "cancelled" && (
+          <div>
+            {/* Cancelled header */}
+            <div className="bg-gradient-to-br from-gray-500 to-slate-600 px-6 pt-8 pb-6 text-white text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <XCircle size={32} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-serif font-bold">Payment Cancelled</h2>
+              <p className="text-white/80 text-sm mt-1">
+                You cancelled the payment process.
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
+                <p className="text-sm text-gray-600 font-medium">
+                  The payment was cancelled.
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Your booking has been saved as cancelled. You can retry booking anytime.
+                </p>
+              </div>
+
+              {/* Venue info */}
+              <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
+                <Building2 size={20} className="text-gray-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-[#2d2d2d]">{venueName}</p>
+                  <p className="text-xs text-gray-500">
+                    Upfront due: {currencyFormatter.format(upfrontAmount)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  id="payment-cancel-close-btn"
+                  onClick={onClose}
+                  className="flex-1 border border-gray-200 text-gray-600 py-3.5 rounded-2xl font-semibold text-sm hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Close
                 </button>
                 <button
                   id="payment-retry-btn"

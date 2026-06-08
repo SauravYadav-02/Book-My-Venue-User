@@ -11,7 +11,7 @@ interface Transaction {
   vendorId: { _id: string; name: string; businessName: string };
   venueId: { _id: string; name: string };
   amount: number;
-  paymentStatus: "pending" | "success" | "failed";
+  paymentStatus: "pending" | "success" | "failed" | "cancelled";
   transactionId: string;
   paymentTimestamp: string;
   description: string;
@@ -120,10 +120,12 @@ export default function Transactions() {
                         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           tx.paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
                           tx.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                          tx.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
                           {tx.paymentStatus === 'success' && <CheckCircle size={10} />}
                           {tx.paymentStatus === 'failed' && <XCircle size={10} />}
+                          {tx.paymentStatus === 'cancelled' && <XCircle size={10} className="text-slate-500" />}
                           {tx.paymentStatus === 'pending' && <Clock size={10} />}
                           {tx.paymentStatus}
                         </div>

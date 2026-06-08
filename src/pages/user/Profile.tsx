@@ -133,11 +133,13 @@ export default function Profile() {
                       <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
                         paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
                         paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                        paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
                         'bg-yellow-100 text-yellow-700'
                       }`}>
                         {paymentStatus === 'success' && <CheckCircle size={12} />}
                         {paymentStatus === 'failed' && <XCircle size={12} />}
-                        {paymentStatus === 'pending' ? 'Payment Pending' : paymentStatus === 'success' ? 'Paid' : 'Failed'}
+                        {paymentStatus === 'cancelled' && <XCircle size={12} className="text-slate-500" />}
+                        {paymentStatus === 'pending' ? 'Payment Pending' : paymentStatus === 'success' ? 'Paid' : (paymentStatus === 'cancelled' ? 'Cancelled' : 'Failed')}
                       </div>
                     </div>
                   </div>

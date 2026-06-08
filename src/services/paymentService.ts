@@ -13,7 +13,7 @@ export interface PaymentBooking {
   totalBookingAmount: number;
   upfrontPaymentAmount: number;
   amountPaid: number;
-  paymentStatus: "success" | "failed";
+  paymentStatus: "success" | "failed" | "cancelled";
   transactionId: string | null;
   paymentTimestamp: string | null;
   status: string;
@@ -41,7 +41,7 @@ export interface CreateBookingPayload {
 
 export interface PayBookingPayload {
   bookingId: string;
-  outcome?: "success" | "failure";
+  outcome?: "success" | "failure" | "cancelled";
 }
 
 export interface CreateBookingResponse {
