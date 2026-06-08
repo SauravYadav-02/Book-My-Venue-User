@@ -165,8 +165,13 @@ export default function VenueDetails() {
             return;
         }
 
-        if (foodType !== "none" && guestCount <= 0) {
-            toast.error("Please enter a guest count greater than 0 for catering.");
+        if (guestCount <= 0) {
+            toast.error("Please enter a guest count greater than 0.");
+            return;
+        }
+
+        if (venue?.capacity && guestCount > venue.capacity) {
+            toast.error("The selected venue cannot accommodate the number of guests.");
             return;
         }
 
@@ -510,61 +515,63 @@ export default function VenueDetails() {
                                 </div>
                             </div>
 
-                            {/* Food Catering Selection */}
-                            {(venue.vegPrice || venue.nonVegPrice) && (
-                                <>
-                                    {/* Guest Count */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                                            Guest Count
-                                        </label>
-                                        <div className="relative">
-                                            <Users
-                                                size={15}
-                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                                            />
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                placeholder="Enter guest count"
-                                                value={guestCount || ""}
-                                                onChange={(e) => {
-                                                    const val = Math.max(0, parseInt(e.target.value) || 0);
-                                                    setGuestCount(val);
-                                                }}
-                                                disabled={!venue.isSubscriptionActive}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
-                                            />
-                                        </div>
+                            {/* Guest Count (Always visible) */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                                    Guest Count
+                                </label>
+                                <div className="relative">
+                                    <Users
+                                        size={15}
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                    />
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Enter guest count"
+                                        value={guestCount || ""}
+                                        onChange={(e) => {
+                                            const val = Math.max(0, parseInt(e.target.value) || 0);
+                                            setGuestCount(val);
+                                        }}
+                                        disabled={!venue.isSubscriptionActive}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all"
+                                    />
+                                </div>
+                                {venue.capacity !== undefined && guestCount > venue.capacity && (
+                                    <div className="mt-2 text-xs text-red-500 font-semibold leading-relaxed">
+                                        Warning: You cannot book this venue because its capacity is less than the number of guests.
                                     </div>
+                                )}
+                            </div>
 
-                                    {/* Food Type */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                                            Food Type
-                                        </label>
-                                        <div className="relative">
-                                            <Utensils
-                                                size={15}
-                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                                            />
-                                            <select
-                                                value={foodType}
-                                                onChange={(e) => setFoodType(e.target.value)}
-                                                disabled={!venue.isSubscriptionActive}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="none">None / No Food</option>
-                                                {venue.vegPrice != null && (
-                                                    <option value="veg">Veg ({currencyFormatter.format(venue.vegPrice)}/person)</option>
-                                                )}
-                                                {venue.nonVegPrice != null && (
-                                                    <option value="nonveg">Non-Veg ({currencyFormatter.format(venue.nonVegPrice)}/person)</option>
-                                                )}
-                                            </select>
-                                        </div>
+                            {/* Food Catering Selection (Conditional on catering prices) */}
+                            {(venue.vegPrice || venue.nonVegPrice) && (
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                                        Food Type
+                                    </label>
+                                    <div className="relative">
+                                        <Utensils
+                                            size={15}
+                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                        />
+                                        <select
+                                            value={foodType}
+                                            onChange={(e) => setFoodType(e.target.value)}
+                                            disabled={!venue.isSubscriptionActive}
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="none">None / No Food</option>
+                                            {venue.vegPrice != null && (
+                                                <option value="veg">Veg ({currencyFormatter.format(venue.vegPrice)}/person)</option>
+                                            )}
+                                            {venue.nonVegPrice != null && (
+                                                <option value="nonveg">Non-Veg ({currencyFormatter.format(venue.nonVegPrice)}/person)</option>
+                                            )}
+                                        </select>
                                     </div>
-                                </>
+                                </div>
                             )}
 
                             {/* Divider */}
@@ -609,11 +616,13 @@ export default function VenueDetails() {
                             <button
                                 id="book-venue-btn"
                                 onClick={handleBooking}
-                                disabled={isBooking || !eventDate || isDateBooked(eventDate) || !venue.isSubscriptionActive}
-                                className="w-full bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-gray-400 text-white py-4 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg shadow-[#5C614D]/20 hover:shadow-[#5C614D]/40 hover:-translate-y-0.5 transform"
+                                disabled={isBooking || !eventDate || isDateBooked(eventDate) || !venue.isSubscriptionActive || (venue.capacity !== undefined && guestCount > venue.capacity)}
+                                className="w-full bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-gray-400 text-white py-4 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg shadow-[#5C614D]/20 hover:shadow-[#5C614D]/40 hover:-translate-y-0.5 transform cursor-pointer"
                             >
                                 {!venue.isSubscriptionActive 
                                     ? "Not available for booking" 
+                                    : (venue.capacity !== undefined && guestCount > venue.capacity)
+                                    ? "Capacity Exceeded"
                                     : isBooking ? "Creating Booking..." : "Book & Pay Upfront"}
                             </button>
 

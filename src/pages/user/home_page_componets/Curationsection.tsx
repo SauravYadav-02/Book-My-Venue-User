@@ -274,6 +274,7 @@ export default function CurationSection({ searchQuery = "", capacityQuery = "" }
                                 rating={venue.averageRating ? venue.averageRating.toFixed(1) : "0.0"}
                                 amenities={venue.amenities}
                                 isNew={venue.isNew}
+                                isSubscriptionActive={venue.isSubscriptionActive}
                             />
                         ))}
                     </div>

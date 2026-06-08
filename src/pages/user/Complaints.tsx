@@ -40,7 +40,7 @@ export default function Complaints() {
   const [activeTab, setActiveTab] = useState<"complaints" | "reports">("complaints");
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [ticketType, setTicketType] = useState<"complaint" | "report">("complaint");
+  const [ticketType, setTicketType] = useState<"complaint" | "report">("report");
 
   // Modals & Form State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -266,11 +266,14 @@ export default function Complaints() {
           <p className="text-sm text-stone-500 mt-1">Raise support requests, report service issues, and chat with vendors.</p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => {
+            setTicketType(activeTab === "complaints" ? "complaint" : "report");
+            setShowCreateModal(true);
+          }}
           className="self-start sm:self-auto inline-flex items-center justify-center gap-2 bg-[#5C614D] hover:bg-[#4C5040] text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 mt-2 sm:mt-3"
         >
           <Plus size={16} />
-          File New Complaint
+          {activeTab === "complaints" ? "File New Complaint" : "Submit Complaint"}
         </button>
       </div>
 
@@ -338,7 +341,7 @@ export default function Complaints() {
               {listLoading ? (
                 <div className="p-8 text-center text-stone-400 text-sm">Loading reports list...</div>
               ) : reports.length === 0 ? (
-                <div className="p-8 text-center text-stone-400 text-sm">No private venue reports submitted yet. Click "File New Complaint" to create one.</div>
+                <div className="p-8 text-center text-stone-400 text-sm">No private venue reports submitted yet. Click "Submit Complaint" to create one.</div>
               ) : (
                 reports.map(rep => (
                   <div
@@ -514,7 +517,7 @@ export default function Complaints() {
                 </div>
 
                 {/* Report Description & Attachments Box */}
-                <div className="p-4 bg-stone-50/60 flex-1 text-sm text-stone-700 space-y-4">
+                <div className="p-4 bg-stone-50/60 flex-1 overflow-y-auto text-sm text-stone-700 space-y-4">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Venue Under Report</h3>
                     <div className="bg-white p-4 rounded-xl border border-stone-100 flex items-center justify-between">
@@ -586,9 +589,11 @@ export default function Complaints() {
           <div className="bg-white rounded-2xl border border-stone-200 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-200">
             
             <div className="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
-              <h2 className="text-lg font-serif text-stone-800">File New Support Ticket</h2>
+              <h2 className="text-lg font-serif text-stone-800">
+                {ticketType === "complaint" ? "File New Support Complaint" : "Submit Private Venue Report"}
+              </h2>
               <button 
-                onClick={() => { setShowCreateModal(false); setTicketType("complaint"); }}
+                onClick={() => { setShowCreateModal(false); setTicketType(activeTab === "complaints" ? "complaint" : "report"); }}
                 className="p-1 hover:bg-stone-200 rounded-full text-stone-500 transition-colors"
               >
                 <X size={18} />
@@ -596,39 +601,6 @@ export default function Complaints() {
             </div>
 
             <form onSubmit={handleCreateComplaint} className="p-6 space-y-4">
-              
-              {/* Ticket Type */}
-              <div className="flex flex-col gap-2 p-3 bg-stone-50 rounded-xl border border-stone-200/50">
-                <label className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">Ticket Type</label>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-stone-700 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="ticketType"
-                      checked={ticketType === "complaint"} 
-                      onChange={() => setTicketType("complaint")} 
-                      className="accent-[#5C614D]"
-                    />
-                    Support Complaint (Shared with Vendor)
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-stone-700 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="ticketType"
-                      checked={ticketType === "report"} 
-                      onChange={() => setTicketType("report")} 
-                      className="accent-[#5C614D]"
-                    />
-                    Private Venue Report (Admin Only)
-                  </label>
-                </div>
-                <p className="text-[10px] text-stone-400 leading-normal mt-1">
-                  {ticketType === "complaint" 
-                    ? "Complaints will open a live chat thread visible to the associated vendor to troubleshoot issues together."
-                    : "Private Reports are confidential between you and platform Admins. Vendors will never see or participate in this ticket."
-                  }
-                </p>
-              </div>
 
               {/* Title */}
               <div className="flex flex-col gap-1.5">
@@ -654,7 +626,9 @@ export default function Complaints() {
                   onChange={(e) => setSelectedVenueId(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none text-sm text-stone-800 focus:border-stone-500 bg-white"
                 >
-                  <option value="">{ticketType === "report" ? "-- Select Reported Venue * --" : "-- Select a Venue (Autolinks Vendor) --"}</option>
+                  <option value="">
+                    {ticketType === "report" ? "-- Select Reported Venue * --" : "-- Select a Venue (Autolinks Vendor) --"}
+                  </option>
                   {venues.map(venue => (
                     <option key={venue._id} value={venue._id}>{venue.name} ({venue.city})</option>
                   ))}
@@ -722,7 +696,7 @@ export default function Complaints() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowCreateModal(false); setTicketType("complaint"); }}
+                  onClick={() => { setShowCreateModal(false); setTicketType(activeTab === "complaints" ? "complaint" : "report"); }}
                   className="bg-stone-100 hover:bg-stone-200 text-stone-700 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all"
                 >
                   Cancel
