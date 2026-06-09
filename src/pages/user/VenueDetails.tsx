@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, Utensils } from "lucide-react";
-import { getVenueById, getVenueImage } from "../../services/VenueUserservice ";
+import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, Utensils, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
+import { getVenueById, MEDIA_BASE_URL } from "../../services/VenueUserservice ";
 import { type Venue } from "../../types/venue.types";
 import { getBookedDatesForVenue } from "../../services/bookingService";
 import { type PaymentBooking, type CreateBookingPayload } from "../../services/paymentService";
@@ -13,7 +13,7 @@ import "./VenueDetails.css";
 import WishlistButton from "../../components/user/WishlistButton";
 import VenueRating from "../../components/user/VenueRating";
 import PaymentModal from "../../components/user/PaymentModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ── Time slot options ────────────────────────────────────────────────
 const TIME_SLOTS = [
@@ -79,6 +79,40 @@ export default function VenueDetails() {
     useEffect(() => {
         fetchVenue();
     }, [id]);
+
+    // Image gallery states & dynamic image derivation
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    const imagesList = venue?.mediaFiles && venue.mediaFiles.length > 0 
+        ? venue.mediaFiles.map(file => `${MEDIA_BASE_URL}/${file.replace(/\\/g, "/")}`)
+        : ["/placeholder.jpg"];
+
+    const handleNextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setActiveImageIndex((prev) => (prev + 1) % imagesList.length);
+    };
+
+    const handlePrevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setActiveImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isLightboxOpen) return;
+            if (e.key === "ArrowRight") {
+                setActiveImageIndex((prev) => (prev + 1) % imagesList.length);
+            } else if (e.key === "ArrowLeft") {
+                setActiveImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+            } else if (e.key === "Escape") {
+                setIsLightboxOpen(false);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isLightboxOpen, imagesList.length]);
 
     const handleRatingUpdate = async () => {
         if (!id) return;
@@ -290,7 +324,6 @@ export default function VenueDetails() {
         );
     }
 
-    const imageUrl = getVenueImage(venue.mediaFiles);
     const location = [venue.city, venue.state, venue.country].filter(Boolean).join(", ");
 
     let parsedAmenities: string[] = [];
@@ -332,23 +365,97 @@ export default function VenueDetails() {
                     className="lg:col-span-2 space-y-8"
                 >
 
-                    {/* Hero Image */}
-                    <div className="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-lg group">
-                        <img
-                            src={imageUrl}
-                            alt={venue.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        {/* Action buttons */}
-                        <div className="absolute top-4 right-4 flex gap-2 z-10">
-                            <WishlistButton venueId={venue._id} className="w-10 h-10" />
-                            <button
-                                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-gray-600 flex items-center justify-center shadow hover:text-[#5C614D] transition-colors duration-200"
-                                aria-label="Share venue"
-                            >
-                                <Share2 size={18} />
-                            </button>
+                    {/* Image Gallery */}
+                    <div className="space-y-4">
+                        {/* Main Image Viewer */}
+                        <div className="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-lg group bg-stone-100 cursor-pointer">
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={activeImageIndex}
+                                    src={imagesList[activeImageIndex]}
+                                    alt={`${venue.name} - ${activeImageIndex + 1}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    onClick={() => setIsLightboxOpen(true)}
+                                    className="w-full h-full object-cover"
+                                />
+                            </AnimatePresence>
+
+                            {/* Left/Right Navigation Arrows */}
+                            {imagesList.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={handlePrevImage}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white backdrop-blur-md text-gray-800 flex items-center justify-center shadow-md hover:scale-105 transition-all duration-200"
+                                        aria-label="Previous image"
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    <button
+                                        onClick={handleNextImage}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white backdrop-blur-md text-gray-800 flex items-center justify-center shadow-md hover:scale-105 transition-all duration-200"
+                                        aria-label="Next image"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Glassmorphic Pill Image Indicator & Zoom Action */}
+                            <div className="absolute bottom-4 right-4 flex items-center gap-3">
+                                <span className="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                                    {activeImageIndex + 1} / {imagesList.length}
+                                </span>
+                                <button
+                                    onClick={() => setIsLightboxOpen(true)}
+                                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                                    aria-label="View fullscreen"
+                                >
+                                    <Maximize2 size={14} />
+                                </button>
+                            </div>
+
+                            {/* Wishlist and Share action buttons */}
+                            <div className="absolute top-4 right-4 flex gap-2 z-10">
+                                <WishlistButton venueId={venue._id} className="w-10 h-10" />
+                                <button
+                                    className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-gray-600 flex items-center justify-center shadow hover:text-[#5C614D] transition-colors duration-200"
+                                    aria-label="Share venue"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(window.location.href);
+                                        toast.success("Link copied to clipboard! 📋");
+                                    }}
+                                >
+                                    <Share2 size={18} />
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Thumbnails strip */}
+                        {imagesList.length > 1 && (
+                            <div className="flex gap-3 overflow-x-auto py-1 scrollbar-hide">
+                                {imagesList.map((imgUrl, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveImageIndex(index)}
+                                        className={`relative w-24 aspect-[16/9] rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200 outline-none ${
+                                            activeImageIndex === index
+                                                ? "ring-2 ring-[#5C614D] scale-[0.98] opacity-100"
+                                                : "opacity-60 hover:opacity-100"
+                                        }`}
+                                    >
+                                        <img
+                                            src={imgUrl}
+                                            alt={`${venue.name} thumbnail ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Venue Title & Rating */}
@@ -655,6 +762,91 @@ export default function VenueDetails() {
                     onPaymentComplete={handlePaymentComplete}
                 />
             )}
+
+            {/* Fullscreen Lightbox Modal */}
+            <AnimatePresence>
+                {isLightboxOpen && (
+                    <div className="fixed inset-0 z-[10000] w-screen h-screen bg-black/95 flex flex-col items-center justify-center p-4">
+                        {/* Backdrop close zone */}
+                        <div 
+                            className="absolute inset-0 cursor-zoom-out" 
+                            onClick={() => setIsLightboxOpen(false)}
+                        />
+
+                        {/* Close button */}
+                        <button
+                            onClick={() => setIsLightboxOpen(false)}
+                            className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors outline-none"
+                            aria-label="Close fullscreen view"
+                        >
+                            <X size={24} />
+                        </button>
+
+                        {/* Main lightbox image container */}
+                        <div className="relative max-w-5xl w-full aspect-[16/9] flex items-center justify-center z-10">
+                            <motion.img
+                                key={activeImageIndex}
+                                src={imagesList[activeImageIndex]}
+                                alt={`${venue.name} - fullscreen ${activeImageIndex + 1}`}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.3 }}
+                                className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+                            />
+
+                            {/* Left/Right Navigation inside Lightbox */}
+                            {imagesList.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={handlePrevImage}
+                                        className="absolute left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors outline-none"
+                                        aria-label="Previous image"
+                                    >
+                                        <ChevronLeft size={28} />
+                                    </button>
+                                    <button
+                                        onClick={handleNextImage}
+                                        className="absolute right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors outline-none"
+                                        aria-label="Next image"
+                                    >
+                                        <ChevronRight size={28} />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Slide count / thumbnail strip in Lightbox */}
+                        <div className="z-10 mt-6 flex flex-col items-center gap-4">
+                            <span className="text-white/80 text-sm font-medium">
+                                {activeImageIndex + 1} of {imagesList.length}
+                            </span>
+                            
+                            {imagesList.length > 1 && (
+                                <div className="flex gap-2 max-w-full overflow-x-auto scrollbar-hide px-4 py-1">
+                                    {imagesList.map((imgUrl, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setActiveImageIndex(index)}
+                                            className={`w-16 aspect-[16/9] rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 outline-none ${
+                                                activeImageIndex === index
+                                                    ? "ring-2 ring-white scale-95 opacity-100"
+                                                    : "opacity-40 hover:opacity-80"
+                                            }`}
+                                        >
+                                            <img
+                                                src={imgUrl}
+                                                alt={`lightbox thumbnail ${index + 1}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
