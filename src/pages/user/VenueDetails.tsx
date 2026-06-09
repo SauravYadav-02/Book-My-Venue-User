@@ -4,7 +4,7 @@ import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, St
 import { getVenueById, MEDIA_BASE_URL } from "../../services/VenueUserservice ";
 import { type Venue } from "../../types/venue.types";
 import { getBookedDatesForVenue } from "../../services/bookingService";
-import { type PaymentBooking, type CreateBookingPayload } from "../../services/paymentService";
+import { type CreateBookingPayload } from "../../services/paymentService";
 import { currencyFormatter } from "../../utils/currency";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
@@ -77,7 +77,9 @@ export default function VenueDetails() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchVenue();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     // Image gallery states & dynamic image derivation
@@ -255,14 +257,15 @@ export default function VenueDetails() {
             });
 
             setShowPaymentModal(true);
-        } catch (error: any) {
-            toast.error(error?.response?.data?.error || error?.response?.data?.message || "Failed to initiate booking");
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string; message?: string } } };
+            toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to initiate booking");
         } finally {
             setIsBooking(false);
         }
     };
 
-    const handlePaymentComplete = (_updatedBooking: PaymentBooking) => {
+    const handlePaymentComplete = () => {
         toast.success("Payment confirmed! Your booking is now active.");
         setEventDate(null);
     };
@@ -337,7 +340,7 @@ export default function VenueDetails() {
         } else if (typeof venue.amenities === 'string') {
             parsedAmenities = JSON.parse(venue.amenities);
         }
-    } catch (e) {
+    } catch {
         parsedAmenities = Array.isArray(venue.amenities) ? venue.amenities : [];
     }
 
