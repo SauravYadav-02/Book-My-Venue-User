@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Search, MapPin, Sparkles, X, Filter, ChevronDown } from "lucide-react";
 import { useVenues } from "../../../store/Usevenues";
 import { getVenueImage } from "../../../services/VenueUserservice ";
-import VenueCard from "../../../components/user/VenueCard";
+import DiscoverCard from "../DiscoverCard";
 
 const CITIES_LIST = ["Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad"];
 const CATEGORIES_LIST = [
@@ -258,27 +258,29 @@ export default function CurationSection({ searchQuery = "", capacityQuery = "" }
                 </div>
             ) : venues.length > 0 ? (
                 <div className="flex flex-col items-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
-                        {venues.slice(0, 4).map((venue) => (
-                            <VenueCard
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                        {venues.slice(0, 3).map((venue) => (
+                            <DiscoverCard
                                 key={venue._id}
                                 venueId={venue._id}
                                 image={getVenueImage(venue.mediaFiles)}
-                                type={venue.type || "VENUE"}
+                                title={venue.name}
+                                location={[venue.city, venue.state, venue.country]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                price={venue.pricePerDay}
+                                capacity={venue.capacity}
+                                type={venue.type}
                                 venueTypes={venue.venueTypes}
                                 eventsSupported={venue.eventsSupported}
-                                price={`₹${venue.pricePerDay || 0}`}
-                                name={venue.name}
-                                location={`${venue.city || ''}, ${venue.state || ''}`}
-                                capacity={`${venue.capacity || 0} cap.`}
-                                rating={venue.averageRating ? venue.averageRating.toFixed(1) : "0.0"}
-                                amenities={venue.amenities}
-                                isNew={venue.isNew}
+                                rating={venue.averageRating ?? 0}
                                 isSubscriptionActive={venue.isSubscriptionActive}
+                                isNew={venue.isNew}
+                                vendorName={venue.vendorId && typeof venue.vendorId === "object" ? venue.vendorId.fullName : undefined}
                             />
                         ))}
                     </div>
-                    {venues.length > 4 && (
+                    {venues.length > 3 && (
                         <div className="mt-12 text-center">
                             <button
                                 onClick={() => navigate("/discover")}

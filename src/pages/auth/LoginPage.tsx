@@ -78,7 +78,10 @@ const LoginPage: React.FC = () => {
             setIsRedirecting(true);
             navigate(redirectUrl, { replace: true });
         }
-    }, [navigate, redirectUrl]);
+        if (searchParams.get("suspended") === "true") {
+            toast.error("Your account has been suspended. Please contact support.");
+        }
+    }, [navigate, redirectUrl, searchParams]);
 
     const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -125,8 +128,9 @@ const LoginPage: React.FC = () => {
                 toast.success("Welcome back! 🎉");
                 setTimeout(() => navigate(redirectUrl), 1000);
             }
-        } catch {
-            toast.error("Login failed. Please check your credentials.");
+        } catch (error: any) {
+            const serverMessage = error?.response?.data?.message || "Login failed. Please check your credentials.";
+            toast.error(serverMessage);
             setLoading(false);
         }
     };

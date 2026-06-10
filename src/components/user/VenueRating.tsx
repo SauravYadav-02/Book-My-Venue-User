@@ -94,7 +94,7 @@ export default function VenueRating({ venueId, venueName, onRatingUpdate }: Venu
     };
 
     return (
-        <div className="space-y-10 mt-12 border-t border-gray-200 pt-12">
+        <div className="space-y-10 mt-12">
             {/* Header */}
             <div className="space-y-2">
                 <h2 className="text-3xl font-serif text-[#2d2d2d]">Ratings & Reviews</h2>

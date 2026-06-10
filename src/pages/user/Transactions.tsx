@@ -8,7 +8,7 @@ interface Transaction {
   _id: string;
   bookingId: string;
   userId: string;
-  vendorId: { _id: string; name: string; businessName: string };
+  vendorId: { _id: string; fullName?: string; name?: string; businessName: string };
   venueId: { _id: string; name: string };
   amount: number;
   paymentStatus: "pending" | "success" | "failed" | "cancelled";
@@ -101,7 +101,7 @@ export default function Transactions() {
                               {tx.venueId?.name || "Venue"}
                             </p>
                             <p className="text-xs text-gray-400 mt-1 font-medium">
-                              {tx.vendorId?.businessName || tx.vendorId?.name || "Vendor"}
+                              {tx.vendorId?.businessName || tx.vendorId?.fullName || tx.vendorId?.name || "Vendor"}
                             </p>
                           </div>
                         </div>

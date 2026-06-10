@@ -474,6 +474,29 @@ export default function VenueDetails() {
                             </span>
                         </div>
 
+                        <h1 className="text-4xl md:text-5xl font-serif text-[#2d2d2d] leading-tight">
+                            {venue.name}
+                        </h1>
+
+                        <div className="flex flex-wrap items-center gap-6 text-gray-500 text-sm font-medium">
+                            {venue.vendorId && (
+                                <span className="flex items-center gap-1.5 bg-[#5C614D]/5 text-[#5C614D] px-3 py-1 rounded-full text-xs font-semibold border border-[#5C614D]/10">
+                                    Host: {typeof venue.vendorId === "object" ? venue.vendorId.fullName : venue.vendorId}
+                                </span>
+                            )}
+                            <span className="flex items-center gap-1.5">
+                                <MapPin size={15} className="text-[#8A8F78]" />
+                                {location}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Users size={15} className="text-[#8A8F78]" />
+                                Up to {venue.capacity} guests
+                            </span>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-200" />
+
                         {/* Categories & Event Types */}
                         {(venue.venueTypes?.length || venue.eventsSupported?.length) && (
                             <div className="flex flex-wrap gap-2 pt-1">
@@ -489,25 +512,7 @@ export default function VenueDetails() {
                                 ))}
                             </div>
                         )}
-
-                        <h1 className="text-4xl md:text-5xl font-serif text-[#2d2d2d] leading-tight">
-                            {venue.name}
-                        </h1>
-
-                        <div className="flex flex-wrap items-center gap-6 text-gray-500 text-sm font-medium">
-                            <span className="flex items-center gap-1.5">
-                                <MapPin size={15} className="text-[#8A8F78]" />
-                                {location}
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <Users size={15} className="text-[#8A8F78]" />
-                                Up to {venue.capacity} guests
-                            </span>
-                        </div>
                     </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-gray-200" />
 
                     {/* About this space */}
                     <div className="space-y-4">
@@ -535,6 +540,26 @@ export default function VenueDetails() {
                                 ))}
                             </div>
                         </div>
+                    )}
+
+                    {/* Host Details */}
+                    {venue.vendorId && typeof venue.vendorId === "object" && (
+                        <>
+                            <div className="border-t border-gray-200" />
+                            <div className="space-y-3 bg-[#5C614D]/5 border border-[#5C614D]/10 rounded-2xl p-5 mt-4">
+                                <h3 className="text-base font-bold text-gray-800 tracking-wide">Host Information</h3>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                    <p><span className="font-semibold text-gray-700 font-sans">Name:</span> {venue.vendorId.fullName}</p>
+                                    {venue.vendorId.businessName && (
+                                        <p><span className="font-semibold text-gray-700 font-sans">Business:</span> {venue.vendorId.businessName}</p>
+                                    )}
+                                    <p><span className="font-semibold text-gray-700 font-sans">Email:</span> {venue.vendorId.email}</p>
+                                    {venue.vendorId.phone && (
+                                        <p><span className="font-semibold text-gray-700 font-sans">Phone:</span> {venue.vendorId.phone}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     {/* Venue Rating Section */}

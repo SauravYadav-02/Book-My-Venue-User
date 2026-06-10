@@ -74,6 +74,7 @@ export default function Wishlist() {
                                 rating={venue.averageRating ?? 0}
                                 isSubscriptionActive={venue.isSubscriptionActive}
                                 isNew={venue.isNew}
+                                vendorName={venue.vendorId && typeof venue.vendorId === "object" ? venue.vendorId.fullName : undefined}
                             />
                         ))}
                     </motion.div>

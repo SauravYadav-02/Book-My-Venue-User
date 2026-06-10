@@ -18,6 +18,7 @@ interface DiscoverCardProps {
     rating?: number;
     isSubscriptionActive?: boolean;
     isNew?: boolean;
+    vendorName?: string;
 }
 
 // memo() prevents re-render when parent state changes but props are identical
@@ -32,6 +33,7 @@ const DiscoverCard = memo(function DiscoverCard({
     rating = 0,
     isSubscriptionActive = true,
     isNew = false,
+    vendorName,
 }: DiscoverCardProps) {
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
@@ -76,7 +78,7 @@ const DiscoverCard = memo(function DiscoverCard({
                     {!isSubscriptionActive && (
                         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-10">
                             <span className="bg-white/90 text-red-600 text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg text-center">
-                                Venue is not Available currently.
+                                This venue is currently unavailable.
                             </span>
                         </div>
                     )}
@@ -118,6 +120,11 @@ const DiscoverCard = memo(function DiscoverCard({
                         <h3 className={`text-lg font-bold text-[#2d2d2d] leading-snug line-clamp-1 transition-colors duration-300 ${isSubscriptionActive ? "group-hover:text-[#5C614D]" : ""}`}>
                             {title}
                         </h3>
+                        {vendorName && (
+                            <p className="text-xs font-semibold text-[#8A8F78] mt-0.5">
+                                Vendor: {vendorName}
+                            </p>
+                        )}
                         <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
                             <MapPin size={13} className="shrink-0 text-[#8A8F78]" />
                             <span className="truncate">{location}</span>
@@ -207,7 +214,7 @@ const DiscoverCard = memo(function DiscoverCard({
                         
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Venue Unavailable</h3>
                         <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-                            Venue is not Available currently.
+                            This venue is currently unavailable.
                         </p>
                         
                         <button

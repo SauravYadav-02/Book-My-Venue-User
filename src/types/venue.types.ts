@@ -9,7 +9,7 @@ export interface Review {
 
 export interface Venue {
     _id: string;
-    vendorId: string;
+    vendorId: string | { _id: string; fullName: string; email: string; businessName?: string; phone?: string };
     name: string;
     type?: string;
     venueTypes?: string[];
