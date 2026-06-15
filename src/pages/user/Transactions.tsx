@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { getUserTransactions } from "../../services/paymentService";
+import { getUserBookings } from "../../services/bookingService";
+import { RemainingPaymentPanel } from "../../components/user/RemainingPaymentPanel";
+import toast from "react-hot-toast";
 import { format } from "date-fns";
-import { Receipt, CheckCircle, XCircle, Clock, Building2 } from "lucide-react";
+import { Receipt, CheckCircle, XCircle, Clock, Building2, RotateCcw } from "lucide-react";
 import { currencyFormatter } from "../../utils/currency";
 
 interface Transaction {
@@ -21,9 +24,90 @@ interface Transaction {
 export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [bookings, setBookings] = useState<any[]>([]);
+
+  const getRemainingPayForBooking = (bookingId: string) => {
+    const b = bookings.find((bk) => bk._id === bookingId);
+    if (!b) return 0;
+    const finalAmt = b.finalAmount || b.totalBookingAmount || b.cost || 0;
+    const remainingAmt = b.remainingAmount !== undefined ? b.remainingAmount : (finalAmt - (b.amountPaid || 0));
+    return remainingAmt;
+  };
+
+  const getBookingStatus = (bookingId: string) => {
+    const b = bookings.find((bk) => bk._id === bookingId);
+    return b ? b.status : "";
+  };
+
+  const getBookingUpdatedAt = (bookingId: string) => {
+    const b = bookings.find((bk) => bk._id === bookingId);
+    return b ? b.updatedAt || b.createdAt : "";
+  };
+
+  const getExpandedTransactions = () => {
+    const list: any[] = [];
+    transactions.forEach((tx) => {
+      const bStatus = getBookingStatus(tx.bookingId);
+      
+      if (bStatus === "cancelled") {
+        // 1. Original payment entry
+        list.push({
+          ...tx,
+          paymentStatus: "success",
+          originalCancelled: true,
+        });
+        
+        // 2. Add refund entry
+        const refundDate = getBookingUpdatedAt(tx.bookingId) || tx.paymentTimestamp || tx.createdAt;
+        list.push({
+          ...tx,
+          _id: `refund-${tx._id}`,
+          isRefund: true,
+          paymentTimestamp: refundDate,
+          createdAt: refundDate,
+          amount: tx.amount,
+          paymentStatus: "refunded",
+        });
+      } else {
+        list.push(tx);
+      }
+    });
+    return list;
+  };
+
+  const handleRowClick = async (bookingId: string) => {
+    if (!bookingId) return;
+    try {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        const response = await getUserBookings(userId);
+        const matched = response.bookings.find((b) => b._id === bookingId);
+        if (matched) {
+          const m = matched as any;
+          if (m.status === "cancelled") {
+            toast.error("This booking is cancelled and cannot accept further payments.");
+            return;
+          }
+          setSelectedBooking({
+            bookingId: matched._id,
+            finalAmount: m.finalAmount || m.totalBookingAmount || m.cost || 0,
+            amountPaid: m.amountPaid || 0,
+            remainingAmount: m.remainingAmount !== undefined ? m.remainingAmount : ((m.finalAmount || m.totalBookingAmount || m.cost || 0) - (m.amountPaid || 0)),
+            balancePaymentStatus: m.balancePaymentStatus || "unpaid",
+          });
+        } else {
+          toast.error("Booking details not found.");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching booking details", error);
+      toast.error("Failed to load booking details.");
+    }
+  };
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    const fetchTransactionsAndBookings = async () => {
       const userId = localStorage.getItem("userId");
       if (!userId || userId === "undefined" || userId === "null") {
         window.location.href = "/login";
@@ -31,16 +115,20 @@ export default function Transactions() {
       }
 
       try {
-        const data = await getUserTransactions(userId);
-        setTransactions(data);
+        const [txData, bookingRes] = await Promise.all([
+          getUserTransactions(userId),
+          getUserBookings(userId)
+        ]);
+        setTransactions(txData || []);
+        setBookings(bookingRes.bookings || []);
       } catch (error) {
-        console.error("Failed to fetch transactions", error);
+        console.error("Failed to fetch transactions and bookings", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTransactions();
+    fetchTransactionsAndBookings();
   }, []);
 
   if (loading) {
@@ -76,62 +164,108 @@ export default function Transactions() {
                     <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Date</th>
                     <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Venue & Vendor</th>
                     <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Transaction ID</th>
-                    <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Amount</th>
+                    <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Amount Paid</th>
+                    <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Remaining Pay</th>
                     <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</th>
+                    <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {transactions.map((tx) => (
-                    <tr key={tx._id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="p-5 whitespace-nowrap">
-                        <p className="text-sm font-semibold text-[#2d2d2d]">
-                          {format(new Date(tx.paymentTimestamp || tx.createdAt as any), 'dd MMM yyyy')}
-                        </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          {format(new Date(tx.paymentTimestamp || tx.createdAt as any), 'hh:mm a')}
-                        </p>
-                      </td>
-                      <td className="p-5">
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
-                            <Building2 size={16} />
+                  {getExpandedTransactions().map((tx) => {
+                    const isRefund = tx.isRefund;
+                    return (
+                      <tr
+                        key={tx._id}
+                        onClick={() => handleRowClick(tx.bookingId)}
+                        className="hover:bg-gray-50/50 cursor-pointer transition-colors"
+                      >
+                        <td className="p-5 whitespace-nowrap">
+                          <p className="text-sm font-semibold text-[#2d2d2d]">
+                            {format(new Date(tx.paymentTimestamp || tx.createdAt as any), 'dd MMM yyyy')}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            {format(new Date(tx.paymentTimestamp || tx.createdAt as any), 'hh:mm a')}
+                          </p>
+                        </td>
+                        <td className="p-5">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                              <Building2 size={16} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-[#2d2d2d] leading-none">
+                                {tx.venueId?.name || "Venue"}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1 font-medium">
+                                {tx.vendorId?.businessName || tx.vendorId?.fullName || tx.vendorId?.name || "Vendor"}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-[#2d2d2d] leading-none">
-                              {tx.venueId?.name || "Venue"}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1 font-medium">
-                              {tx.vendorId?.businessName || tx.vendorId?.fullName || tx.vendorId?.name || "Vendor"}
-                            </p>
+                        </td>
+                        <td className="p-5">
+                          <span className={`text-xs font-mono px-2 py-1 rounded ${
+                            isRefund ? "text-blue-600 bg-blue-50" : "text-gray-500 bg-gray-100"
+                          }`}>
+                            {isRefund ? `REF-${tx.transactionId ? tx.transactionId.substring(5) : tx._id.substring(0, 8).toUpperCase()}` : tx.transactionId}
+                          </span>
+                        </td>
+                        <td className={`p-5 font-bold ${isRefund ? "text-blue-600" : "text-[#2d2d2d]"}`}>
+                          {isRefund ? "-" : ""}{currencyFormatter.format(tx.amount)}
+                        </td>
+                        <td className="p-5 font-bold text-amber-700">
+                          {isRefund ? "—" : currencyFormatter.format(getRemainingPayForBooking(tx.bookingId))}
+                        </td>
+                        <td className="p-5">
+                          <div className="flex flex-col items-start gap-1">
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              isRefund ? "bg-blue-50 text-blue-700 border border-blue-200" :
+                              tx.paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
+                              tx.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                              tx.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {isRefund && <RotateCcw size={10} />}
+                              {(tx.paymentStatus === 'success' && !isRefund) && <CheckCircle size={10} />}
+                              {tx.paymentStatus === 'failed' && <XCircle size={10} />}
+                              {tx.paymentStatus === 'cancelled' && <XCircle size={10} className="text-slate-500" />}
+                              {tx.paymentStatus === 'pending' && <Clock size={10} />}
+                              {isRefund ? 'refunded' : tx.paymentStatus}
+                            </div>
+                            {isRefund && (
+                              <span className="text-[10px] text-blue-600 font-semibold italic mt-0.5 whitespace-nowrap">
+                                Refunded — venue unavailable
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-5">
-                        <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                          {tx.transactionId}
-                        </span>
-                      </td>
-                      <td className="p-5">
-                        <p className="text-sm font-bold text-[#2d2d2d]">
-                          {currencyFormatter.format(tx.amount)}
-                        </p>
-                      </td>
-                      <td className="p-5">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          tx.paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
-                          tx.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
-                          tx.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {tx.paymentStatus === 'success' && <CheckCircle size={10} />}
-                          {tx.paymentStatus === 'failed' && <XCircle size={10} />}
-                          {tx.paymentStatus === 'cancelled' && <XCircle size={10} className="text-slate-500" />}
-                          {tx.paymentStatus === 'pending' && <Clock size={10} />}
-                          {tx.paymentStatus}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-5">
+                          {isRefund ? (
+                            <span className="text-[10px] font-bold uppercase text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                              Refunded
+                            </span>
+                          ) : tx.originalCancelled ? (
+                            <span className="text-[10px] font-bold uppercase text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                              Paid (Upfront)
+                            </span>
+                          ) : getRemainingPayForBooking(tx.bookingId) > 0 ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRowClick(tx.bookingId);
+                              }}
+                              className="bg-[#5C614D] hover:bg-[#4d5140] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm"
+                            >
+                              Pay
+                            </button>
+                          ) : (
+                            <span className="text-[10px] font-bold uppercase text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                              Fully Paid
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -149,6 +283,44 @@ export default function Transactions() {
         )}
 
       </div>
+
+      {/* Booking Detail Modal for User */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl border border-gray-100 flex flex-col text-left">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <h2 className="font-serif text-lg font-bold text-[#2d2d2d]">Remaining Payment Detail</h2>
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors text-lg"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-6">
+              <RemainingPaymentPanel
+                booking={selectedBooking}
+                onSuccess={async () => {
+                  await handleRowClick(selectedBooking.bookingId);
+                  const userId = localStorage.getItem("userId");
+                  if (userId) {
+                    try {
+                      const [txData, bookingRes] = await Promise.all([
+                        getUserTransactions(userId),
+                        getUserBookings(userId)
+                      ]);
+                      setTransactions(txData || []);
+                      setBookings(bookingRes.bookings || []);
+                    } catch (error) {
+                      console.error("Failed to refresh transactions and bookings", error);
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -239,7 +239,7 @@ export default function VenueDetails() {
 
             setBookingPayload({
                 userId,
-                vendorId: venue!.vendorId,
+                vendorId: typeof venue!.vendorId === "object" ? (venue!.vendorId as any)._id : venue!.vendorId,
                 venueId: venue!._id,
                 date: formattedDate,
                 bookingAmount: total,

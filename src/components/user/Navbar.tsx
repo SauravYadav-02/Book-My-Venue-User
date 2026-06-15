@@ -1,17 +1,34 @@
-import { LogIn, User as UserIcon, Menu, X, LogOut } from "lucide-react";
+import { LogIn, User as UserIcon, Menu, X, LogOut, Bell } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getUserById } from "../../services/userService";
 import type { UserProfile } from "../../types/user.types";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
+import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type Notification } from "../../services/notificationService";
 
 export default function Navbar() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const fetchNotifications = async () => {
+    if (userId && userId !== "undefined" && userId !== "null") {
+      try {
+        const data = await getUserNotifications(userId);
+        setNotifications(data);
+      } catch (err) {
+        console.error("Error fetching notifications", err);
+      }
+    }
+  };
 
   useEffect(() => {
     if (userId && userId !== "undefined" && userId !== "null") {
@@ -29,6 +46,11 @@ export default function Navbar() {
           localStorage.removeItem("userId");
           setUser(null);
         });
+
+      fetchNotifications();
+      // Poll every 30 seconds for live notification updates
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
     }
   }, [userId]);
 
@@ -44,6 +66,16 @@ export default function Navbar() {
     setUser(null);
     setShowLogoutConfirm(false);
     navigate("/");
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (!userId) return;
+    try {
+      await markAllNotificationsAsRead(userId);
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error("Error marking all notifications as read", err);
+    }
   };
 
   return (
@@ -64,6 +96,105 @@ export default function Navbar() {
       </nav>
 
       <div className="flex items-center gap-4 md:gap-6 text-sm font-medium text-brand-text relative">
+        {userId && (
+          <div className="relative">
+            <button
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="relative p-2 text-brand-text hover:text-[#5C614D] transition-colors focus:outline-none cursor-pointer flex items-center justify-center rounded-full hover:bg-stone-100"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-[#F7F6F2]">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <>
+                  {/* Click overlay to close */}
+                  <div 
+                    className="fixed inset-0 z-40 cursor-default" 
+                    onClick={() => setIsNotificationsOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-3 w-80 md:w-96 bg-white border border-stone-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-[#F7F6F2]/50">
+                      <h3 className="font-serif text-[#4C5040] font-bold text-sm">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllAsRead}
+                          className="text-[11px] text-[#5C614D] hover:text-[#4C5040] font-semibold cursor-pointer transition-colors"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Notification List */}
+                    <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-xs text-gray-400">
+                          No notifications yet
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification._id}
+                            onClick={async () => {
+                              if (!notification.isRead) {
+                                try {
+                                  await markNotificationAsRead(notification._id);
+                                  setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
+                                } catch (err) {
+                                  console.error(err);
+                                }
+                              }
+                              setIsNotificationsOpen(false);
+                              navigate("/transactions");
+                            }}
+                            className={`px-4 py-3 flex gap-2.5 text-left transition-colors cursor-pointer hover:bg-stone-50 ${
+                              !notification.isRead ? "bg-stone-50/70" : ""
+                            }`}
+                          >
+                            {/* Dot indicator */}
+                            <div className="flex-shrink-0 mt-1.5">
+                              <span className={`block h-1.5 w-1.5 rounded-full ${
+                                !notification.isRead ? "bg-red-500" : "bg-transparent"
+                              }`} />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-xs ${!notification.isRead ? "font-bold text-gray-900" : "text-gray-600"}`}>
+                                {notification.title}
+                              </p>
+                              <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                                {notification.message}
+                              </p>
+                              <p className="text-[9px] text-gray-400 mt-1 font-medium">
+                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
         {userId ? (
           <div 
             className="relative cursor-pointer flex items-center"
