@@ -64,3 +64,31 @@ export const updateBookingStatus = async (
   const res = await axios.put(`${BASE_URL}/${bookingId}/status`, { status });
   return res.data;
 };
+
+export interface RefundPreview {
+  refundAmount: number;
+  refundTier: "full" | "50%" | "25%" | "none";
+  daysBeforeEvent: number;
+  amountPaid: number;
+  canCancel: boolean;
+}
+
+export interface CancellationResult {
+  success: boolean;
+  booking: any;
+  refundAmount: number;
+  refundTier: string;
+  daysBeforeEvent: number;
+  message: string;
+}
+
+export const getRefundPreview = async (bookingId: string, userId: string): Promise<RefundPreview> => {
+  const res = await axios.get(`${BASE_URL}/${bookingId}/refund-preview?userId=${userId}`);
+  return res.data;
+};
+
+export const cancelBooking = async (bookingId: string, userId: string, reason?: string): Promise<CancellationResult> => {
+  const res = await axios.post(`${BASE_URL}/${bookingId}/cancel`, { userId, reason });
+  return res.data;
+};
+

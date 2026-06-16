@@ -51,7 +51,7 @@ export default function Complaints() {
   const [loading, setLoading] = useState(false);
   const [listLoading, setListLoading] = useState(true);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // 1. Fetch complaints list on load
   const fetchComplaints = async (silent = false) => {
@@ -152,7 +152,12 @@ export default function Complaints() {
 
   // 3. Scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   // 4. Submit message
@@ -416,7 +421,7 @@ export default function Complaints() {
                 </div>
 
                 {/* Chat Messages Log */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[350px] bg-stone-50/20">
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[350px] bg-stone-50/20">
                   {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-400">
                       <MessageSquare size={36} className="mb-2 text-stone-300" />
@@ -447,7 +452,6 @@ export default function Complaints() {
                       );
                     })
                   )}
-                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Reply Form */}

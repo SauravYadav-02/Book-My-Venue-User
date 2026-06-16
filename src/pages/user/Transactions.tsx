@@ -4,7 +4,7 @@ import { getUserBookings } from "../../services/bookingService";
 import { RemainingPaymentPanel } from "../../components/user/RemainingPaymentPanel";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
-import { Receipt, CheckCircle, XCircle, Clock, Building2, RotateCcw } from "lucide-react";
+import { ReceiptIndianRupee, CheckCircle, XCircle, Clock, Building2, RotateCcw } from "lucide-react";
 import { currencyFormatter } from "../../utils/currency";
 
 interface Transaction {
@@ -40,34 +40,25 @@ export default function Transactions() {
     return b ? b.status : "";
   };
 
-  const getBookingUpdatedAt = (bookingId: string) => {
-    const b = bookings.find((bk) => bk._id === bookingId);
-    return b ? b.updatedAt || b.createdAt : "";
-  };
 
   const getExpandedTransactions = () => {
     const list: any[] = [];
     transactions.forEach((tx) => {
+      const isDbRefund = tx.description?.toLowerCase().includes("refund");
+      if (isDbRefund) {
+        list.push({
+          ...tx,
+          isRefund: true,
+        });
+        return;
+      }
+
       const bStatus = getBookingStatus(tx.bookingId);
-      
       if (bStatus === "cancelled") {
-        // 1. Original payment entry
         list.push({
           ...tx,
           paymentStatus: "success",
           originalCancelled: true,
-        });
-        
-        // 2. Add refund entry
-        const refundDate = getBookingUpdatedAt(tx.bookingId) || tx.paymentTimestamp || tx.createdAt;
-        list.push({
-          ...tx,
-          _id: `refund-${tx._id}`,
-          isRefund: true,
-          paymentTimestamp: refundDate,
-          createdAt: refundDate,
-          amount: tx.amount,
-          paymentStatus: "refunded",
         });
       } else {
         list.push(tx);
@@ -149,7 +140,7 @@ export default function Transactions() {
         
         <div className="mb-10 text-center">
           <div className="w-16 h-16 bg-[#5C614D]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#5C614D]">
-            <Receipt size={32} />
+            <ReceiptIndianRupee size={32} />
           </div>
           <h1 className="text-3xl font-serif text-[#2d2d2d]">Transaction History</h1>
           <p className="text-gray-500 mt-2">View all your payments made to venues</p>
@@ -206,7 +197,7 @@ export default function Transactions() {
                           <span className={`text-xs font-mono px-2 py-1 rounded ${
                             isRefund ? "text-blue-600 bg-blue-50" : "text-gray-500 bg-gray-100"
                           }`}>
-                            {isRefund ? `REF-${tx.transactionId ? tx.transactionId.substring(5) : tx._id.substring(0, 8).toUpperCase()}` : tx.transactionId}
+                            {isRefund ? (tx.paymentStatus === "pending" ? "REF-PENDING" : tx.transactionId || "REF-COMPLETED") : tx.transactionId}
                           </span>
                         </td>
                         <td className={`p-5 font-bold ${isRefund ? "text-blue-600" : "text-[#2d2d2d]"}`}>
@@ -218,30 +209,40 @@ export default function Transactions() {
                         <td className="p-5">
                           <div className="flex flex-col items-start gap-1">
                             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              isRefund ? "bg-blue-50 text-blue-700 border border-blue-200" :
-                              tx.paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
-                              tx.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
-                              tx.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
-                              'bg-yellow-100 text-yellow-700'
+                              isRefund 
+                                ? (tx.paymentStatus === "pending" 
+                                    ? "bg-amber-50 text-amber-700 border border-amber-200" 
+                                    : "bg-blue-50 text-blue-700 border border-blue-200")
+                                : (tx.paymentStatus === 'success' ? 'bg-green-100 text-green-700' :
+                                   tx.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                                   tx.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-700' :
+                                   'bg-yellow-100 text-yellow-700')
                             }`}>
-                              {isRefund && <RotateCcw size={10} />}
-                              {(tx.paymentStatus === 'success' && !isRefund) && <CheckCircle size={10} />}
+                              {(isRefund && tx.paymentStatus === "pending") && <Clock size={10} />}
+                              {(isRefund && tx.paymentStatus === "success") && <RotateCcw size={10} />}
+                              {(!isRefund && tx.paymentStatus === 'success') && <CheckCircle size={10} />}
                               {tx.paymentStatus === 'failed' && <XCircle size={10} />}
                               {tx.paymentStatus === 'cancelled' && <XCircle size={10} className="text-slate-500" />}
-                              {tx.paymentStatus === 'pending' && <Clock size={10} />}
-                              {isRefund ? 'refunded' : tx.paymentStatus}
+                              {(!isRefund && tx.paymentStatus === 'pending') && <Clock size={10} />}
+                              {isRefund 
+                                ? (tx.paymentStatus === "pending" ? "refund pending" : "refunded") 
+                                : tx.paymentStatus}
                             </div>
                             {isRefund && (
-                              <span className="text-[10px] text-blue-600 font-semibold italic mt-0.5 whitespace-nowrap">
-                                Refunded — venue unavailable
+                              <span className="text-[10px] text-blue-600 font-semibold italic mt-0.5 max-w-[150px] truncate" title={tx.description}>
+                                {tx.description}
                               </span>
                             )}
                           </div>
                         </td>
                         <td className="p-5">
                           {isRefund ? (
-                            <span className="text-[10px] font-bold uppercase text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full whitespace-nowrap">
-                              Refunded
+                            <span className={`text-[10px] font-bold uppercase border px-2.5 py-1 rounded-full whitespace-nowrap ${
+                              tx.paymentStatus === "pending" 
+                                ? "text-amber-700 bg-amber-50 border-amber-200" 
+                                : "text-blue-700 bg-blue-50 border border-blue-200"
+                            }`}>
+                              {tx.paymentStatus === "pending" ? "Refund Pending" : "Refunded"}
                             </span>
                           ) : tx.originalCancelled ? (
                             <span className="text-[10px] font-bold uppercase text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full whitespace-nowrap">
@@ -273,7 +274,7 @@ export default function Transactions() {
         ) : (
           <div className="bg-white rounded-3xl p-20 text-center border border-gray-100 shadow-sm">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-              <Receipt size={32} />
+              <ReceiptIndianRupee size={32} />
             </div>
             <h3 className="text-2xl font-serif text-[#2d2d2d] mb-2">No transactions found</h3>
             <p className="text-gray-500 max-w-sm mx-auto">

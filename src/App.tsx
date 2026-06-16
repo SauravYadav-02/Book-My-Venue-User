@@ -19,6 +19,7 @@ import Wishlist from "./pages/user/Wishlist";
 import Transactions from "./pages/user/Transactions";
 import Planning from "./pages/user/Planning";
 import Complaints from "./pages/user/Complaints";
+import MyBookings from "./pages/user/MyBookings";
 
 // Context
 import { VenueProvider } from "./store/Venuecontext";
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="wishlist" element={<Wishlist />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="my-bookings" element={<MyBookings />} />
           <Route path="planning" element={<Planning />} />
           <Route path="complaints" element={<Complaints />} />
         </Route>

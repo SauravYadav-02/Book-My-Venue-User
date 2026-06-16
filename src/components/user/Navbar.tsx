@@ -89,6 +89,7 @@ export default function Navbar() {
       <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-brand-text">
         <Link to="/" className="hover:text-brand-primary transition-colors">Home</Link>
         <Link to="/discover" className="hover:text-brand-primary transition-colors">Discover</Link>
+        <Link to="/my-bookings" className="hover:text-brand-primary transition-colors">My Bookings</Link>
         <Link to="/wishlist" className="hover:text-brand-primary transition-colors">Wishlist</Link>
         <Link to="/planning" className="hover:text-brand-primary transition-colors">Planning</Link>
         <Link to="/complaints" className="hover:text-brand-primary transition-colors">Complaints</Link>
@@ -248,6 +249,12 @@ export default function Navbar() {
                       My Transactions
                     </Link>
                     <Link
+                      to="/my-bookings"
+                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
+                    >
+                      My Bookings
+                    </Link>
+                    <Link
                       to="/wishlist"
                       className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
                     >
@@ -299,6 +306,7 @@ export default function Navbar() {
              <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
             <Link to="/discover" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Discover</Link>
             <Link to="/transactions" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Transactions</Link>
+            <Link to="/my-bookings" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>My Bookings</Link>
             <Link to="/wishlist" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
             <Link to="/planning" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Planning</Link>
             <Link to="/complaints" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Complaints</Link>
