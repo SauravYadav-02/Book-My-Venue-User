@@ -93,7 +93,7 @@ export default function Navbar() {
         <Link to="/wishlist" className="hover:text-brand-primary transition-colors">Wishlist</Link>
         <Link to="/planning" className="hover:text-brand-primary transition-colors">Planning</Link>
         <Link to="/complaints" className="hover:text-brand-primary transition-colors">Complaints</Link>
-        <Link to="/" className="hover:text-brand-primary transition-colors">Inspiration</Link>
+        <Link to="/blogs" className="hover:text-brand-primary transition-colors">Blogs</Link>
       </nav>
 
       <div className="flex items-center gap-4 md:gap-6 text-sm font-medium text-brand-text relative">
@@ -310,7 +310,7 @@ export default function Navbar() {
             <Link to="/wishlist" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
             <Link to="/planning" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Planning</Link>
             <Link to="/complaints" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Complaints</Link>
-            <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Inspiration</Link>
+            <Link to="/blogs" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Blogs</Link>
           </motion.div>
         )}
       </AnimatePresence>
