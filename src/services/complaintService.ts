@@ -52,10 +52,10 @@ export const submitComplaint = async (userId: string, formData: FormData): Promi
 
 // 2. Fetch all user complaints
 export const getMyComplaints = async (userId: string): Promise<Complaint[]> => {
-  const res = await axios.get<Complaint[]>(BASE_URL, {
+  const res = await axios.get<any>(BASE_URL, {
     headers: { userid: userId }
   });
-  return res.data;
+  return Array.isArray(res.data) ? res.data : (res.data.data || []);
 };
 
 // 3. Get single complaint details
