@@ -1,5 +1,6 @@
 import philosophyDiningImg from "../../../assets/philosophy_dining.png";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const pillars = [
     {
@@ -13,6 +14,8 @@ const pillars = [
 ];
 
 export default function PhilosophySection() {
+    const navigate = useNavigate();
+
     return (
         <section className="w-full max-w-7xl mx-auto px-6 py-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
@@ -79,7 +82,8 @@ export default function PhilosophySection() {
                         <motion.button 
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="bg-[#5C614D] hover:bg-[#4C5040] text-[#F7F6F2] px-8 py-4 rounded-xl font-medium transition-colors shadow-sm"
+                            onClick={() => navigate("/about")}
+                            className="bg-[#5C614D] hover:bg-[#4C5040] text-[#F7F6F2] px-8 py-4 rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
                         >
                             Learn More About Us
                         </motion.button>

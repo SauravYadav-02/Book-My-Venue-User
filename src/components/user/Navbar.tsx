@@ -19,13 +19,13 @@ export default function Navbar() {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Discover", path: "/discover" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact Us", path: "/contact" },
     { name: "My Bookings", path: "/my-bookings" },
     { name: "Wishlist", path: "/wishlist" },
     { name: "Planning", path: "/planning" },
     { name: "Complaints", path: "/complaints" },
-    { name: "Blogs", path: "/blogs" }
+    { name: "Blogs", path: "/blogs" },
+    { name: "About Us", path: "/about" },
+    { name: "Contact Us", path: "/contact" }
   ];
 
   const isActive = (path: string) => {
