@@ -260,7 +260,7 @@ const UserRegistration: React.FC = () => {
             setIsLoadingTerms(true);
             setTermsError("");
             try {
-                const response = await fetch("http://localhost:3000/terms/active");
+                const response = await fetch("http://192.168.1.12:3000/terms/active");
                 const data = await response.json();
                 if (response.ok && data?.success && data?.terms) {
                     setActiveTermsVersion(data.terms.version);

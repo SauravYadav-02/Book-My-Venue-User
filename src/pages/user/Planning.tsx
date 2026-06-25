@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   CheckCircle2, Circle, Trash2, Plus, Calendar, 
   Sparkles, ClipboardList, CheckSquare, PlusCircle,
@@ -85,6 +85,10 @@ export default function Planning() {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
+  // References for scrolling
+  const formRef = useRef<HTMLFormElement>(null);
+  const todoListRef = useRef<HTMLDivElement>(null);
+
   // States for Category Creation Form
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [catName, setCatName] = useState("");
@@ -104,8 +108,8 @@ export default function Planning() {
         setLoading(true);
         const headers = getHeaders();
         const [todosRes, catsRes] = await Promise.all([
-          axios.get("http://localhost:3000/todos", headers),
-          axios.get("http://localhost:3000/todos/categories", headers)
+          axios.get("http://192.168.1.12:3000/todos", headers),
+          axios.get("http://192.168.1.12:3000/todos/categories", headers)
         ]);
         setTodos(todosRes.data);
         setCustomCategories(catsRes.data);
@@ -137,7 +141,7 @@ export default function Planning() {
     };
 
     try {
-      const res = await axios.post("http://localhost:3000/todos", payload, getHeaders());
+      const res = await axios.post("http://192.168.1.12:3000/todos", payload, getHeaders());
       setTodos(prev => [res.data, ...prev]);
       
       // Reset form
@@ -146,7 +150,17 @@ export default function Planning() {
       setNewAmount("");
       setNewLocation("");
       setShowAddForm(false);
+      
+      // Ensure the newly added task is visible by resetting filters
+      setActiveCategory("all");
+      setActiveType("all");
+      
       toast.success("Task added to checklist! 📝");
+
+      // Scroll smoothly to the checklist container
+      setTimeout(() => {
+        todoListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 150);
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.message || "Failed to create task");
@@ -158,7 +172,7 @@ export default function Planning() {
     setTodos(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, completed: !currentCompleted } : t));
     
     try {
-      await axios.put(`http://localhost:3000/todos/${id}`, { completed: !currentCompleted }, getHeaders());
+      await axios.put(`http://192.168.1.12:3000/todos/${id}`, { completed: !currentCompleted }, getHeaders());
     } catch (err) {
       console.error(err);
       toast.error("Failed to update status");
@@ -169,7 +183,7 @@ export default function Planning() {
 
   const deleteTodo = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3000/todos/${id}`, getHeaders());
+      await axios.delete(`http://192.168.1.12:3000/todos/${id}`, getHeaders());
       setTodos(prev => prev.filter(t => t._id !== id && t.id !== id));
       toast.success("Task removed");
     } catch (err) {
@@ -193,7 +207,7 @@ export default function Planning() {
     };
 
     try {
-      const res = await axios.post("http://localhost:3000/todos/categories", payload, getHeaders());
+      const res = await axios.post("http://192.168.1.12:3000/todos/categories", payload, getHeaders());
       setCustomCategories(prev => [...prev, res.data]);
       setNewCategory(value); // Automatically select newly created category
       setCatName("");
@@ -208,7 +222,7 @@ export default function Planning() {
   const handleDeleteCategory = async (id: string, value: string) => {
     if (!window.confirm("Are you sure you want to delete this custom category? All tasks inside will be set to 'Other'.")) return;
     try {
-      await axios.delete(`http://localhost:3000/todos/categories/${id}`, getHeaders());
+      await axios.delete(`http://192.168.1.12:3000/todos/categories/${id}`, getHeaders());
       setCustomCategories(prev => prev.filter(c => c._id !== id));
       
       // Update todos that belong to this category to 'other' locally
@@ -311,7 +325,15 @@ export default function Planning() {
           </div>
 
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => {
+              const nextState = !showAddForm;
+              setShowAddForm(nextState);
+              if (nextState) {
+                setTimeout(() => {
+                  formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 100);
+              }
+            }}
             className="self-center md:self-auto bg-[#5C614D] hover:bg-[#4C5040] text-white px-6 py-3.5 rounded-2xl font-semibold text-sm flex items-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95"
           >
             <Plus size={18} />
@@ -418,7 +440,7 @@ export default function Planning() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <form onSubmit={handleAddTodo} className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+              <form ref={formRef} onSubmit={handleAddTodo} className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
                 <h3 className="text-lg font-serif text-[#2d2d2d] flex items-center gap-2">
                   <PlusCircle size={18} className="text-[#5C614D]" />
                   Add a new checklist task
@@ -595,7 +617,7 @@ export default function Planning() {
         </AnimatePresence>
 
         {/* Todo List */}
-        <div className="space-y-3">
+        <div ref={todoListRef} className="space-y-3">
           <AnimatePresence initial={false}>
             {filteredTodos.length > 0 ? (
               filteredTodos.map((todo) => {

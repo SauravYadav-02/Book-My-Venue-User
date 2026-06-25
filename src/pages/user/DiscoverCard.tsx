@@ -60,25 +60,25 @@ const DiscoverCard = memo(function DiscoverCard({
                 className={`group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col h-full ${
                     !isSubscriptionActive ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
                 }`}
-                style={{ borderRadius: "1.5rem" }}
+                style={{ borderRadius: "1.25rem" }}
             >
                 {/* ── Image Container ─────────────────────────────── */}
                 <div
-                    className={`relative overflow-hidden m-3 flex-shrink-0 ${!isSubscriptionActive ? "grayscale" : ""}`}
-                    style={{ borderRadius: "1.2rem", aspectRatio: "4/3" }}
+                    className={`relative overflow-hidden m-2 sm:m-3 flex-shrink-0 ${!isSubscriptionActive ? "grayscale" : ""}`}
+                    style={{ borderRadius: "0.95rem", aspectRatio: "4/3" }}
                 >
                     {/* Plain img + CSS transition: no framer-motion conflict */}
                     <img
                         src={image}
                         alt={title}
                         loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover bg-stone-50/50 transition-transform duration-500 group-hover:scale-105"
                     />
 
                     {!isSubscriptionActive && (
-                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-10">
-                            <span className="bg-white/90 text-red-600 text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg text-center">
-                                This venue is currently unavailable.
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-2 sm:p-4 z-10">
+                            <span className="bg-white/90 text-red-600 text-[8px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg text-center">
+                                Unavailable
                             </span>
                         </div>
                     )}
@@ -88,51 +88,51 @@ const DiscoverCard = memo(function DiscoverCard({
 
                     {/* Type tag — top left */}
                     {isNew && (
-                        <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1 max-w-[70%]">
-                            <span className="bg-amber-400 text-stone-900 text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm animate-pulse">
+                        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 flex flex-wrap gap-1 max-w-[70%]">
+                            <span className="bg-amber-400 text-stone-900 text-[8px] sm:text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-sm animate-pulse">
                                 New
                             </span>
                         </div>
                     )}
 
                     {/* Wishlist button — top right */}
-                    <div className="absolute top-3 right-3 z-10">
+                    <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 scale-90 sm:scale-100">
                         <WishlistButton venueId={venueId} />
                     </div>
 
                     {/* Rating badge — bottom right */}
-                    <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1 bg-white shadow-md px-2.5 py-1 rounded-full z-10">
+                    <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 z-10 flex items-center gap-1 bg-white shadow-md px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full">
                         {rating > 0 ? (
                             <>
-                                <Star size={13} fill="#f59e0b" className="text-amber-400" />
-                                <span className="text-xs font-bold text-[#2d2d2d]">{rating.toFixed(1)}</span>
+                                <Star size={11} fill="#f59e0b" className="text-amber-400 sm:w-[13px] sm:h-[13px]" />
+                                <span className="text-[10px] sm:text-xs font-bold text-[#2d2d2d]">{rating.toFixed(1)}</span>
                             </>
                         ) : (
-                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">0.0</span>
+                            <span className="text-[9px] sm:text-[10px] font-medium text-gray-400 uppercase tracking-wide">0.0</span>
                         )}
                     </div>
                 </div>
 
                 {/* ── Content ─────────────────────────────────────── */}
-                <div className={`px-4 pb-4 flex flex-col gap-3 flex-1 ${!isSubscriptionActive ? "opacity-50" : ""}`}>
+                <div className={`px-2.5 pb-2.5 sm:px-4 sm:pb-4 flex flex-col gap-2 sm:gap-3 flex-1 ${!isSubscriptionActive ? "opacity-50" : ""}`}>
                     {/* Name + Location */}
                     <div>
-                        <h3 className={`text-lg font-bold text-[#2d2d2d] leading-snug line-clamp-1 transition-colors duration-300 ${isSubscriptionActive ? "group-hover:text-[#5C614D]" : ""}`}>
+                        <h3 className={`text-sm sm:text-base md:text-lg font-bold text-[#2d2d2d] leading-snug line-clamp-1 transition-colors duration-300 ${isSubscriptionActive ? "group-hover:text-[#5C614D]" : ""}`}>
                             {title}
                         </h3>
                         {vendorName && (
-                            <p className="text-xs font-semibold text-[#8A8F78] mt-0.5">
-                                Vendor: {vendorName}
+                            <p className="text-[10px] sm:text-xs font-semibold text-[#8A8F78] mt-0.5">
+                                Host: {vendorName}
                             </p>
                         )}
-                        <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-                            <MapPin size={13} className="shrink-0 text-[#8A8F78]" />
+                        <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm mt-1">
+                            <MapPin size={11} className="shrink-0 text-[#8A8F78] sm:w-[13px] sm:h-[13px]" />
                             <span className="truncate">{location}</span>
                         </div>
 
-                        {/* Supported Events chips */}
+                        {/* Supported Events chips — hidden on mobile to avoid overflow */}
                         {eventsSupported && eventsSupported.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
+                            <div className="hidden sm:flex flex-wrap gap-1.5 mt-2">
                                 {eventsSupported.slice(0, 3).map((ev) => (
                                     <span key={ev} className="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-md">
                                         {ev}
@@ -152,15 +152,15 @@ const DiscoverCard = memo(function DiscoverCard({
 
                     {/* Capacity + Price */}
                     <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
-                            <Users size={15} className="text-[#8A8F78]" />
+                        <div className="flex items-center gap-1 text-gray-500 text-[10px] sm:text-sm font-medium">
+                            <Users size={12} className="text-[#8A8F78] sm:w-[15px] sm:h-[15px]" />
                             <span>Up to {capacity}</span>
                         </div>
                         <div className="flex items-baseline gap-0.5">
-                            <span className="text-[#2d2d2d] font-bold text-base">
+                            <span className="text-[#2d2d2d] font-bold text-xs sm:text-base">
                                 {currencyFormatter.format(price)}
                             </span>
-                            <span className="text-gray-400 text-xs font-medium">/day</span>
+                            <span className="text-gray-400 text-[9px] sm:text-xs font-medium">/d</span>
                         </div>
                     </div>
 
@@ -175,13 +175,13 @@ const DiscoverCard = memo(function DiscoverCard({
                                 setShowUnavailableModal(true);
                             }
                         }}
-                        className={`w-full text-sm font-semibold py-3 rounded-xl transition-all duration-300 transform tracking-wide ${
+                        className={`w-full text-xs sm:text-sm font-semibold py-2 sm:py-3 rounded-xl transition-all duration-300 transform tracking-wide ${
                             isSubscriptionActive 
                             ? "bg-[#5C614D] hover:bg-[#4C5040] text-white hover:shadow-md hover:shadow-[#5C614D]/30 hover:-translate-y-0.5 cursor-pointer"
                             : "bg-gray-200 text-gray-400 cursor-not-allowed"
                         }`}
                     >
-                        {isSubscriptionActive ? "Book Now" : "Currently Unavailable"}
+                        {isSubscriptionActive ? "Book Now" : "Unavailable"}
                     </motion.button>
                 </div>
             </motion.div>

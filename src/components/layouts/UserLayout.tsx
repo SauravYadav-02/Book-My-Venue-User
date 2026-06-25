@@ -35,34 +35,32 @@ export default function UserLayout() {
             </div>
           </div>
 
-          <div>
-            <h4 className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-6">Discover</h4>
-            <ul className="flex flex-col gap-4 text-sm">
-              <li><Link to="/" className="hover:text-brand-primary">Featured Venues</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">New Collections</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">Planning Tools</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">Inspiration Blog</Link></li>
-            </ul>
-          </div>
+          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-8">
+            <div>
+              <h4 className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-6">Discover</h4>
+              <ul className="flex flex-col gap-4 text-sm">
+                <li><Link to="/#search-results" className="hover:text-brand-primary">Featured Venues</Link></li>
+                <li><Link to="/#newly-listed" className="hover:text-brand-primary">New Collections</Link></li>
+                <li><Link to="/planning" className="hover:text-brand-primary">Planning Tools</Link></li>
+                <li><Link to="/blogs" className="hover:text-brand-primary">Inspiration Blog</Link></li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-6">Company</h4>
-            <ul className="flex flex-col gap-4 text-sm">
-              <li><Link to="/" className="hover:text-brand-primary">About Us</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">Careers</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">Press</Link></li>
-              <li><Link to="/" className="hover:text-brand-primary">Contact</Link></li>
-            </ul>
+            <div>
+              <h4 className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-6">Company</h4>
+              <ul className="flex flex-col gap-4 text-sm">
+                <li><Link to="/about" className="hover:text-brand-primary">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-brand-primary">Contact</Link></li>
+              </ul>
+            </div>
           </div>
 
         </div>
 
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-          <p>© 2024 Book My Venue. All rights reserved.</p>
+          <p>© 2026 Book My Venue. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="/" className="hover:text-brand-primary">Privacy Policy</Link>
-            <Link to="/" className="hover:text-brand-primary">Terms of Service</Link>
-            <Link to="/" className="hover:text-brand-primary">Cookie Policy</Link>
+            <Link to="/terms" className="hover:text-brand-primary">Terms and Conditions</Link>
           </div>
         </div>
       </footer>

@@ -19,6 +19,7 @@ export interface Venue {
     pricePerDay: number;
     vegPrice?: number | null;
     nonVegPrice?: number | null;
+    bothPrice?: number | null;
     address?: string;
     city: string;
     state: string;

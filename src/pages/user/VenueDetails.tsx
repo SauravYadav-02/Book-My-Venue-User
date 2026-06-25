@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, Utensils, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Calendar, Clock, MapPin, Share2, ShieldCheck, Star, Users, Utensils, ChevronLeft, ChevronRight, Maximize2, X, ChevronDown } from "lucide-react";
 import { getVenueById, MEDIA_BASE_URL } from "../../services/VenueUserservice ";
 import { type Venue } from "../../types/venue.types";
 import { getBookedDatesForVenue } from "../../services/bookingService";
@@ -29,6 +29,85 @@ const SLOT_MULTIPLIERS: Record<string, number> = {
     evening: 0.6,
     fullday: 1.0,
 };
+
+interface CustomDetailsSelectProps {
+    value: string;
+    onChange: (val: string) => void;
+    options: { label: string; value: string; disabled?: boolean }[];
+    icon: React.ReactNode;
+    disabled?: boolean;
+}
+
+function CustomDetailsSelect({ value, onChange, options, icon, disabled = false }: CustomDetailsSelectProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selectedOption = options.find(o => o.value === value);
+
+    return (
+        <div ref={dropdownRef} className="relative select-none w-full">
+            <button
+                type="button"
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                disabled={disabled}
+                className={`w-full flex items-center justify-between pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all text-left relative ${
+                    disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+            >
+                <div className="flex items-center gap-2 truncate">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                        {icon}
+                    </div>
+                    <span className="truncate">{selectedOption ? selectedOption.label : ""}</span>
+                </div>
+                <ChevronDown size={16} className={`text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-[999] left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="max-h-60 overflow-y-auto scrollbar-hide py-1">
+                        {options.map((opt) => {
+                            if (opt.disabled) {
+                                return (
+                                    <div
+                                        key={opt.value}
+                                        className="px-4 py-2.5 text-sm text-gray-300 bg-gray-50/50 cursor-not-allowed flex items-center justify-between"
+                                    >
+                                        <span className="truncate">{opt.label}</span>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div
+                                    key={opt.value}
+                                    onClick={() => {
+                                        onChange(opt.value);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`px-4 py-2.5 text-sm cursor-pointer transition-all hover:bg-gray-50 flex items-center justify-between ${
+                                        value === opt.value ? "bg-[#5C614D]/10 text-[#5C614D] font-semibold" : "text-slate-600 hover:text-slate-900"
+                                    }`}
+                                >
+                                    <span className="truncate">{opt.label}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function VenueDetails() {
     const { id } = useParams<{ id: string }>();
@@ -85,6 +164,7 @@ export default function VenueDetails() {
     // Image gallery states & dynamic image derivation
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
 
     const imagesList = venue?.mediaFiles && venue.mediaFiles.length > 0 
         ? venue.mediaFiles.map(file => `${MEDIA_BASE_URL}/${file.replace(/\\/g, "/")}`)
@@ -290,7 +370,13 @@ export default function VenueDetails() {
     const basePrice = venue?.pricePerDay ?? 0;
     const multiplier = SLOT_MULTIPLIERS[timeSlot] ?? 1.0;
     const calculatedVenueAmount = basePrice * multiplier;
-    const perPlatePrice = foodType === "veg" ? (venue?.vegPrice ?? 0) : foodType === "nonveg" ? (venue?.nonVegPrice ?? 0) : 0;
+    const perPlatePrice = foodType === "veg"
+        ? (venue?.vegPrice ?? 0)
+        : foodType === "nonveg"
+        ? (venue?.nonVegPrice ?? 0)
+        : foodType === "both"
+        ? (venue?.bothPrice ?? venue?.nonVegPrice ?? venue?.vegPrice ?? 0)
+        : 0;
     const foodTotal = guestCount * perPlatePrice;
     const serviceFee = 0; // Can be calculated later
     const total = calculatedVenueAmount + foodTotal + serviceFee;
@@ -382,7 +468,7 @@ export default function VenueDetails() {
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.3 }}
                                     onClick={() => setIsLightboxOpen(true)}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover bg-stone-50"
                                 />
                             </AnimatePresence>
 
@@ -515,12 +601,27 @@ export default function VenueDetails() {
                     </div>
 
                     {/* About this space */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         <h2 className="text-xl font-serif text-[#2d2d2d]">About this space</h2>
-                        <p className="text-gray-600 leading-relaxed text-base">
-                            {venue.description ??
-                                "A beautifully curated space designed for extraordinary events. Contact us to learn more about this remarkable venue and its unique offerings."}
-                        </p>
+                        <div className="text-gray-600 leading-relaxed text-base">
+                            <p>
+                                {isDescExpanded
+                                    ? (venue.description ?? "A beautifully curated space designed for extraordinary events. Contact us to learn more about this remarkable venue and its unique offerings.")
+                                    : (venue.description 
+                                        ? (venue.description.length > 180 
+                                            ? `${venue.description.slice(0, 180)}...` 
+                                            : venue.description)
+                                        : "A beautifully curated space designed for extraordinary events. Contact us to learn more about this remarkable venue and its unique offerings.")}
+                            </p>
+                            {venue.description && venue.description.length > 180 && (
+                                <button
+                                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                    className="text-[#5C614D] hover:text-[#4C5040] font-bold text-sm mt-2 transition-colors duration-200 outline-none flex items-center gap-1 focus:underline cursor-pointer"
+                                >
+                                    {isDescExpanded ? "Read Less" : "Read More"}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Amenities */}
@@ -627,27 +728,20 @@ export default function VenueDetails() {
                                 <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                                     Time Slot
                                 </label>
-                                <div className="relative">
-                                    <Clock
-                                        size={15}
-                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                                    />
-                                    <select
-                                        value={timeSlot}
-                                        onChange={(e) => setTimeSlot(e.target.value)}
-                                        disabled={!venue.isSubscriptionActive}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
-                                    >
-                                        {TIME_SLOTS.map((slot) => {
-                                            const disabled = isSlotBooked(eventDate, slot.value);
-                                            return (
-                                                <option key={slot.value} value={slot.value} disabled={disabled}>
-                                                    {slot.label} {disabled ? "(Unavailable)" : ""}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
+                                <CustomDetailsSelect
+                                    value={timeSlot}
+                                    onChange={setTimeSlot}
+                                    disabled={!venue.isSubscriptionActive}
+                                    icon={<Clock size={15} />}
+                                    options={TIME_SLOTS.map((slot) => {
+                                        const disabled = isSlotBooked(eventDate, slot.value);
+                                        return {
+                                            label: `${slot.label} ${disabled ? "(Unavailable)" : ""}`,
+                                            value: slot.value,
+                                            disabled
+                                        };
+                                    })}
+                                />
                             </div>
 
                             {/* Guest Count (Always visible) */}
@@ -681,31 +775,23 @@ export default function VenueDetails() {
                             </div>
 
                             {/* Food Catering Selection (Conditional on catering prices) */}
-                            {(venue.vegPrice || venue.nonVegPrice) && (
+                            {(venue.vegPrice || venue.nonVegPrice || venue.bothPrice) && (
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                                         Food Type
                                     </label>
-                                    <div className="relative">
-                                        <Utensils
-                                            size={15}
-                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                                        />
-                                        <select
-                                            value={foodType}
-                                            onChange={(e) => setFoodType(e.target.value)}
-                                            disabled={!venue.isSubscriptionActive}
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-[#2d2d2d] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5C614D]/30 focus:border-[#5C614D] transition-all appearance-none cursor-pointer"
-                                        >
-                                            <option value="none">None / No Food</option>
-                                            {venue.vegPrice != null && (
-                                                <option value="veg">Veg ({currencyFormatter.format(venue.vegPrice)}/person)</option>
-                                            )}
-                                            {venue.nonVegPrice != null && (
-                                                <option value="nonveg">Non-Veg ({currencyFormatter.format(venue.nonVegPrice)}/person)</option>
-                                            )}
-                                        </select>
-                                    </div>
+                                    <CustomDetailsSelect
+                                        value={foodType}
+                                        onChange={setFoodType}
+                                        disabled={!venue.isSubscriptionActive}
+                                        icon={<Utensils size={15} />}
+                                        options={[
+                                            { label: "None / No Food", value: "none" },
+                                            ...(venue.vegPrice != null ? [{ label: `Veg (${currencyFormatter.format(venue.vegPrice)}/person)`, value: "veg" }] : []),
+                                            ...(venue.nonVegPrice != null ? [{ label: `Non-Veg (${currencyFormatter.format(venue.nonVegPrice)}/person)`, value: "nonveg" }] : []),
+                                            ...((venue.bothPrice != null || (venue.vegPrice != null && venue.nonVegPrice != null)) ? [{ label: `Veg & Non-Veg Both (${currencyFormatter.format(venue.bothPrice ?? venue.nonVegPrice ?? venue.vegPrice ?? 0)}/person)`, value: "both" }] : [])
+                                        ]}
+                                    />
                                 </div>
                             )}
 

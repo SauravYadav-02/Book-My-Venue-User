@@ -213,23 +213,18 @@
 
 
 
-import { useState } from "react";
 import CurationSection from "./home_page_componets/Curationsection";
 import CuratedCollectionsSection from "./home_page_componets/Curatedcollectionssection";
 import PhilosophySection from "./home_page_componets/Philosophysection";
 import HeroSection from "./home_page_componets/Herosection";
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [capacityQuery, setCapacityQuery] = useState("");
+  const searchQuery = "";
+  const capacityQuery = "";
 
   return (
     <div className="w-full flex flex-col items-center">
-      <HeroSection onSearch={(search, capacity) => {
-        setSearchQuery(search);
-        setCapacityQuery(capacity);
-        document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
-      }} />
+      <HeroSection />
       <CurationSection searchQuery={searchQuery} capacityQuery={capacityQuery} />
       <CuratedCollectionsSection />
       <PhilosophySection />

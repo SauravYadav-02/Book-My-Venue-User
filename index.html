@@ -9,9 +9,13 @@ window.$RefreshSig$ = () => (type) => type;</script>
     <script type="module" src="/@vite/client"></script>
 
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>book-my-venue</title>
+    <title>Book My Venue</title>
+
+    <script>
+      var i=new Image();i.src="/images/hero/logo2.png";
+      i.onload=function(){var c=document.createElement("canvas");c.width=c.height=64;var x=c.getContext("2d");x.beginPath();x.roundRect(0,0,64,64,64*0.35);x.clip();x.drawImage(i,0,0,64,64);var l=document.createElement("link");l.rel="icon";l.href=c.toDataURL();document.head.appendChild(l);}
+    </script>
   </head>
   <body>
     <div id="root"></div>

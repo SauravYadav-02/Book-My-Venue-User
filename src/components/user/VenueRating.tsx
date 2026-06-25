@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Star, Send, Loader2, User, Edit2 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import { submitReview, getVenueReviews, type Review } from "../../services/ratingService";
+import { submitReview, getVenueReviews, checkCanReview, type Review } from "../../services/ratingService";
 
 interface VenueRatingProps {
     venueId: string;
@@ -18,11 +18,33 @@ export default function VenueRating({ venueId, venueName, onRatingUpdate }: Venu
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [canReview, setCanReview] = useState<boolean | null>(null); // null = loading
+    const [canReviewMessage, setCanReviewMessage] = useState<string | null>(null);
+    const [eligibilityLoading, setEligibilityLoading] = useState(false);
+
     const userId = localStorage.getItem("userId");
 
     useEffect(() => {
         fetchReviews();
-    }, [venueId]);
+        if (userId) {
+            checkEligibility();
+        }
+    }, [venueId, userId]);
+
+    const checkEligibility = async () => {
+        if (!userId) return;
+        try {
+            setEligibilityLoading(true);
+            const result = await checkCanReview(venueId, userId);
+            setCanReview(result.canReview);
+            setCanReviewMessage(result.message);
+        } catch (err) {
+            setCanReview(false);
+            setCanReviewMessage("Unable to verify booking status.");
+        } finally {
+            setEligibilityLoading(false);
+        }
+    };
 
     const fetchReviews = async () => {
         try {
@@ -102,7 +124,33 @@ export default function VenueRating({ venueId, venueName, onRatingUpdate }: Venu
             </div>
 
             {/* Rating Form */}
-            {userId ? (
+            {!userId ? (
+                // Not logged in
+                <div className="bg-[#4a5043]/5 rounded-3xl p-8 border border-dashed border-[#4a5043]/20 text-center space-y-4">
+                    <p className="text-[#4a5043] font-medium">Please login to share your review</p>
+                    <a href="/login" className="inline-block text-sm font-bold text-[#4a5043] underline underline-offset-4">
+                        Login Now
+                    </a>
+                </div>
+            ) : eligibilityLoading || canReview === null ? (
+                // Loading eligibility
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 flex items-center gap-3 text-gray-400">
+                    <Loader2 size={18} className="animate-spin" />
+                    <span className="text-sm">Checking booking status...</span>
+                </div>
+            ) : canReview === false ? (
+                // Not eligible
+                <div className="bg-amber-50 rounded-3xl p-8 border border-amber-100 text-center space-y-3">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+                        <Star size={22} className="text-amber-500" />
+                    </div>
+                    <p className="font-semibold text-amber-800">Review Not Available Yet</p>
+                    <p className="text-sm text-amber-600 max-w-sm mx-auto leading-relaxed">
+                        {canReviewMessage || "You can only review this venue after your event date has passed."}
+                    </p>
+                </div>
+            ) : (
+                // Eligible — show form (KEEP EXISTING FORM CODE EXACTLY AS IS)
                 <div id="review-form" className="bg-white rounded-3xl p-8 shadow-soft border border-gray-100">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-3">
@@ -156,13 +204,6 @@ export default function VenueRating({ venueId, venueName, onRatingUpdate }: Venu
                             {isSubmitting ? "Submitting..." : "Submit Review"}
                         </button>
                     </form>
-                </div>
-            ) : (
-                <div className="bg-[#4a5043]/5 rounded-3xl p-8 border border-dashed border-[#4a5043]/20 text-center space-y-4">
-                    <p className="text-[#4a5043] font-medium">Please login to share your review</p>
-                    <a href="/login" className="inline-block text-sm font-bold text-[#4a5043] underline underline-offset-4">
-                        Login Now
-                    </a>
                 </div>
             )}
 

@@ -28,7 +28,7 @@ export default function PhilosophySection() {
                     <img
                         src={philosophyDiningImg}
                         alt="Dining Experience"
-                        className="w-full h-[500px] lg:h-[650px] object-cover rounded-[2.5rem]"
+                        className="w-full h-[500px] lg:h-[650px] object-cover rounded-[2.5rem] shadow-[0_35px_80px_-10px_rgba(0,0,0,0.4)]"
                     />
                     <motion.div 
                         initial={{ opacity: 0, y: 30 }}

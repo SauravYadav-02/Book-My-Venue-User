@@ -14,7 +14,7 @@ import {
   submitReport,
   type Report
 } from "../../services/reportService";
-import { getAllVenues } from "../../services/VenueUserservice ";
+import { getUserBookings } from "../../services/bookingService";
 import { type Venue } from "../../types/venue.types";
 import toast, { Toaster } from "react-hot-toast";
 import { 
@@ -27,6 +27,15 @@ import {
   FileText,
   ArrowLeft
 } from "lucide-react";
+
+const getInitials = (name?: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return parts[0].slice(0, 2).toUpperCase();
+};
 
 export default function Complaints() {
   const userId = localStorage.getItem("userId") || "";
@@ -86,10 +95,24 @@ export default function Complaints() {
   useEffect(() => {
     fetchComplaints();
     fetchReports();
-    // Load venues for dropdown selector
-    getAllVenues()
-      .then(setVenues)
-      .catch(console.error);
+    // Load only user's booked venues for dropdown selector
+    if (userId) {
+      getUserBookings(userId)
+        .then((res) => {
+          const bookedVenuesMap = new Map<string, any>();
+          res.bookings?.forEach((b: any) => {
+            if (b.venueId && b.venueId._id) {
+              bookedVenuesMap.set(b.venueId._id, {
+                _id: b.venueId._id,
+                name: b.venueId.name,
+                city: b.venueId.city || ""
+              });
+            }
+          });
+          setVenues(Array.from(bookedVenuesMap.values()));
+        })
+        .catch(console.error);
+    }
   }, [userId]);
 
   // 2. Poll messages & status of the active complaint
@@ -308,7 +331,7 @@ export default function Complaints() {
               <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">Your Complaints</h2>
             </div>
             
-            <div className="flex-1 overflow-y-auto divide-y divide-stone-100 max-h-[600px]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-stone-100 max-h-[600px]">
               {listLoading ? (
                 <div className="p-8 text-center text-stone-400 text-sm">Loading complaints list...</div>
               ) : complaints.length === 0 ? (
@@ -342,7 +365,7 @@ export default function Complaints() {
               <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">Your Private Reports</h2>
             </div>
             
-            <div className="flex-1 overflow-y-auto divide-y divide-stone-100 max-h-[600px]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-stone-100 max-h-[600px]">
               {listLoading ? (
                 <div className="p-8 text-center text-stone-400 text-sm">Loading reports list...</div>
               ) : reports.length === 0 ? (
@@ -421,7 +444,7 @@ export default function Complaints() {
                 </div>
 
                 {/* Chat Messages Log */}
-                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[350px] bg-stone-50/20">
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4 min-h-0 bg-stone-50/20">
                   {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-400">
                       <MessageSquare size={36} className="mb-2 text-stone-300" />
@@ -431,22 +454,55 @@ export default function Complaints() {
                   ) : (
                     messages.map((msg) => {
                       const isOwn = msg.senderId === userId;
+                      const isAdminMsg = msg.senderModel === "Admin";
+                      
                       return (
-                        <div key={msg._id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                            isOwn 
-                              ? "bg-[#5C614D] text-white rounded-br-none" 
-                              : "bg-white border border-stone-200/70 text-stone-800 rounded-bl-none"
+                        <div key={msg._id} className={`flex items-start gap-2.5 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                          {/* Avatar */}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 shadow-sm ${
+                            isOwn
+                              ? "bg-[#5C614D] text-[#f7f6f2]"
+                              : isAdminMsg
+                                ? "bg-amber-600 text-white font-bold"
+                                : "bg-[#4a5043] text-stone-100"
                           }`}>
-                            <div className="flex items-center justify-between gap-4 mb-1">
-                              <span className={`text-[10px] font-bold uppercase tracking-wider ${isOwn ? "text-stone-300" : "text-stone-400"}`}>
-                                {isOwn ? "You" : msg.senderName} ({msg.senderModel})
-                              </span>
-                              <span className={`text-[9px] ${isOwn ? "text-stone-400" : "text-stone-400"}`}>
+                            {getInitials(isOwn ? "You" : msg.senderName)}
+                          </div>
+
+                          {/* Message Bubble Column */}
+                          <div className={`flex flex-col max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
+                            {/* Sender name & time metadata */}
+                            <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-stone-400">
+                              {!isOwn ? (
+                                <>
+                                  <span className="font-semibold text-stone-655">{msg.senderName}</span>
+                                  <span className={`px-1.5 py-0.2 text-[8px] font-bold uppercase tracking-wider rounded-full border ${
+                                    isAdminMsg 
+                                      ? "bg-amber-50 text-amber-700 border-amber-200" 
+                                      : "bg-[#4a5043]/10 text-[#4a5043] border-[#4a5043]/20"
+                                  }`}>
+                                    {msg.senderModel}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="font-semibold text-stone-655">You</span>
+                              )}
+                              <span>•</span>
+                              <span>
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <p className="leading-relaxed whitespace-pre-line">{msg.message}</p>
+
+                            {/* Message Bubble itself */}
+                            <div className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm leading-relaxed whitespace-pre-line text-xs font-medium ${
+                              isOwn
+                                ? "bg-[#5C614D] text-white rounded-tr-none"
+                                : isAdminMsg
+                                  ? "bg-amber-50 border border-amber-200/80 text-amber-950 rounded-tl-none"
+                                  : "bg-[#4a5043]/10 border border-[#4a5043]/20 text-[#2c3226] rounded-tl-none"
+                            }`}>
+                              <p className="leading-relaxed whitespace-pre-line text-xs font-medium">{msg.message}</p>
+                            </div>
                           </div>
                         </div>
                       );
@@ -456,30 +512,30 @@ export default function Complaints() {
 
                 {/* Reply Form */}
                 <div className="p-4 border-t border-stone-200 bg-white">
-                  <form onSubmit={handleSendMessage} className="flex gap-2">
+                  <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-stone-50/80 border border-stone-200 rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-stone-500 focus-within:ring-1 focus-within:ring-stone-500/20 transition-all">
                     <input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type your response..."
                       disabled={selectedComplaint.status === "Closed" || selectedComplaint.status === "Rejected"}
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 outline-none text-sm text-stone-800 placeholder:text-stone-400 focus:border-stone-500 focus:ring-1 focus:ring-stone-500 disabled:bg-stone-50 disabled:cursor-not-allowed transition-all"
+                      className="flex-1 bg-transparent border-0 outline-none text-sm text-stone-800 placeholder:text-stone-400 focus:ring-0 focus:outline-none min-w-0 disabled:cursor-not-allowed"
                     />
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || selectedComplaint.status === "Closed" || selectedComplaint.status === "Rejected"}
-                      className="bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-stone-200 disabled:cursor-not-allowed text-white p-2.5 rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95"
+                      className="bg-[#5C614D] hover:bg-[#4C5040] disabled:bg-stone-200 disabled:cursor-not-allowed text-white p-2.5 rounded-full flex items-center justify-center transition-all shadow-sm active:scale-95 shrink-0"
                     >
-                      <Send size={16} />
+                      <Send size={14} className="translate-x-[0.5px] -translate-y-[0.5px]" />
                     </button>
                   </form>
                   {selectedComplaint.status === "Closed" && (
-                    <p className="text-[10px] text-amber-600 font-semibold mt-1 flex items-center gap-1">
+                    <p className="text-[10px] text-amber-600 font-semibold mt-1.5 flex items-center gap-1">
                       <AlertCircle size={10} /> This complaint has been closed. Replying is disabled.
                     </p>
                   )}
                   {selectedComplaint.status === "Rejected" && (
-                    <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                    <p className="text-[10px] text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
                       <AlertCircle size={10} /> This complaint has been rejected by Admin. Replying is disabled.
                     </p>
                   )}
@@ -631,7 +687,7 @@ export default function Complaints() {
                   className="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none text-sm text-stone-800 focus:border-stone-500 bg-white"
                 >
                   <option value="">
-                    {ticketType === "report" ? "-- Select Reported Venue * --" : "-- Select a Venue (Autolinks Vendor) --"}
+                    {ticketType === "report" ? "-- Select a Booked Venue * --" : "-- Select a Booked Venue (Optional) --"}
                   </option>
                   {venues.map(venue => (
                     <option key={venue._id} value={venue._id}>{venue.name} ({venue.city})</option>

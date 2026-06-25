@@ -11,6 +11,11 @@
   font-family: "Rubik", sans-serif;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #f7f6f2;
   /* Warm soft beige from design */
@@ -98,14 +103,14 @@ body {
   }
 }
 
-/* Hide number input spinner controls (increment/decrement arrows) */
-.no-spinner::-webkit-outer-spin-button,
-.no-spinner::-webkit-inner-spin-button {
+/* Hide number input spinner controls (increment/decrement arrows) globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.no-spinner[type="number"] {
+input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }

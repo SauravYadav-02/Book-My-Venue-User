@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/api/notifications";
+const BASE_URL = "http://192.168.1.12:3000/api/notifications";
 
 const getHeaders = () => {
   const userId = localStorage.getItem("userId");

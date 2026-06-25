@@ -1,4 +1,3 @@
-import { Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 const images = [
@@ -8,16 +7,9 @@ const images = [
     "/images/hero/anniversary_bg.png",
 ];
 
-interface HeroSectionProps {
-    onSearch?: (search: string, capacity: string) => void;
-}
-
-export default function HeroSection({ onSearch }: HeroSectionProps) {
+export default function HeroSection() {
     const [slideIndex, setSlideIndex] = useState(0);
     const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
-
-    const [location, setLocation] = useState("");
-    const [guests, setGuests] = useState("");
 
     const currentImage = Math.abs(slideIndex % images.length);
 
@@ -63,19 +55,19 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         }),
     };
 
-    const sentence = "Find a space that feels like home.";
+    const sentence = "Find the space that feels like home.";
     const words = sentence.split(" ");
 
     return (
-        <section className="relative w-full min-h-screen flex flex-col items-center justify-center text-center overflow-hidden bg-black">
+        <section className="relative w-full min-h-screen flex flex-col items-center justify-end text-center overflow-hidden bg-black pb-20">
             {/* Background Image Slider with Ken Burns & Slide Effect */}
             <div className="absolute inset-0 z-0">
-                <AnimatePresence initial={false} custom={direction}>
+                <AnimatePresence custom={direction}>
                     <motion.div
                         key={slideIndex}
                         custom={direction}
                         variants={variants}
-                        initial="enter"
+                        initial={slideIndex === 0 ? { opacity: 0, scale: 1.2, x: 0 } : "enter"}
                         animate="center"
                         exit="exit"
                         transition={{
@@ -100,110 +92,34 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
                 </AnimatePresence>
             </div>
 
-            <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-20 flex flex-col items-center">
-                <h1 className="text-5xl md:text-[6rem] font-medium text-white tracking-tighter mb-6 leading-[1] drop-shadow-2xl flex flex-wrap justify-center gap-x-4">
-                    {words.map((word, i) => (
-                        <motion.span
-                            key={i}
-                            custom={i}
-                            variants={textVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="inline-block"
-                        >
-                            {word}
-                        </motion.span>
-                    ))}
-                </h1>
+            <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center">
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight drop-shadow-md flex flex-wrap justify-center gap-x-3 mb-2 leading-[1.2]">
+                        {words.map((word, i) => (
+                            <motion.span
+                                key={i}
+                                custom={i}
+                                variants={textVariants}
+                                initial="hidden"
+                                animate="visible"
+                                className="inline-block"
+                            >
+                                {word}
+                            </motion.span>
+                        ))}
+                    </h1>
 
-                <motion.p
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                    className="text-gray-200 text-lg md:text-2xl mb-14 max-w-2xl font-light tracking-widest uppercase opacity-80"
-                >
-                    Exquisite Venues • Memorable Moments
-                </motion.p>
-
-                {/* Grounded Search Bar with Hover Effects */}
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 3] }}
-                    className="bg-white/10 backdrop-blur-2xl rounded-[3rem] p-4 md:p-4 flex flex-col md:flex-row items-center shadow-[0_30px_100px_rgba(0,0,0,0.5)] w-full max-w-4xl border border-white/20 gap-4 md:gap-0"
-                >
-                    <div className="w-full md:flex-[1.5] flex flex-col text-left px-6 py-2 group cursor-pointer hover:bg-white/5 rounded-3xl transition-all">
-                        <span className="text-[11px] font-bold text-white/60 tracking-[0.2em] uppercase mb-1">Location</span>
-                        <input
-                            type="text"
-                            placeholder="Where are you going?"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    if (onSearch) onSearch(location, guests);
-                                }
-                            }}
-                            className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light"
-                        />
-                    </div>
-
-                    <div className="hidden md:block w-px h-12 bg-white/20 mx-4"></div>
-
-                    <div className="w-full md:flex-1 flex flex-col text-left px-6 py-2 group cursor-pointer hover:bg-white/5 rounded-3xl transition-all">
-                        <span className="text-[11px] font-bold text-white/60 tracking-[0.2em] uppercase mb-1">Guests</span>
-                        <input
-                            type="number"
-                            placeholder="Set capacity"
-                            value={guests}
-                            onChange={(e) => setGuests(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    if (onSearch) onSearch(location, guests);
-                                }
-                            }}
-                            className="text-lg outline-none text-white placeholder:text-white/40 w-full bg-transparent font-light no-spinner"
-                        />
-                    </div>
-
-                    <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                            if (onSearch) {
-                                onSearch(location, guests);
-                            }
-                        }}
-                        className="bg-white text-black w-full md:w-auto md:px-14 h-16 md:h-20 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 group"
+                    <motion.p
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+                        className="text-stone-300 text-xs md:text-sm tracking-[0.25em] uppercase font-light opacity-90 max-w-2xl"
                     >
-                        <Search size={22} className="mr-3 transition-transform group-hover:rotate-12" />
-                        <span className="font-bold text-lg tracking-tight">Search Now</span>
-                    </motion.button>
-                </motion.div>
-
-                {/* Progress-based Indicators */}
-                <div className="absolute bottom-12 flex gap-4">
-                    {images.map((_, idx) => (
-                        <div
-                            key={idx}
-                            className="relative h-1 w-12 bg-white/20 rounded-full overflow-hidden cursor-pointer"
-                            onClick={() => {
-                                const newIndex = slideIndex + (idx - currentImage);
-                                setDirection(idx > currentImage ? 1 : -1);
-                                setSlideIndex(newIndex);
-                            }}
-                        >
-                            {currentImage === idx && (
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ duration: 6, ease: "linear" }}
-                                    className="absolute inset-0 bg-white"
-                                />
-                            )}
-                        </div>
-                    ))}
+                        Exquisite Venues • Memorable Moments
+                    </motion.p>
                 </div>
+
+
             </div>
         </section>
     );

@@ -22,6 +22,9 @@ import Complaints from "./pages/user/Complaints";
 import MyBookings from "./pages/user/MyBookings";
 import Blogs from "./pages/user/Blogs";
 import BlogDetail from "./pages/user/BlogDetail";
+import AboutUs from "./pages/user/AboutUs";
+import ContactUs from "./pages/user/ContactUs";
+import TermsAndConditions from "./pages/user/TermsAndConditions";
 
 // Context
 import { VenueProvider } from "./store/Venuecontext";
@@ -42,6 +45,8 @@ export default function App() {
         <Route path="/" element={<VenueProvider><UserLayout /></VenueProvider>}>
           <Route index element={<Home />} />
           <Route path="discover" element={<Discover />} />
+          <Route path="about" element={<AboutUs />} />
+          <Route path="contact" element={<ContactUs />} />
           <Route path="venue/:id" element={<VenueDetails />} />
           <Route path="profile" element={<Profile />} />
           <Route path="wishlist" element={<Wishlist />} />
@@ -51,6 +56,7 @@ export default function App() {
           <Route path="complaints" element={<Complaints />} />
           <Route path="blogs" element={<Blogs />} />
           <Route path="blogs/:id" element={<BlogDetail />} />
+          <Route path="terms" element={<TermsAndConditions />} />
         </Route>
 
 

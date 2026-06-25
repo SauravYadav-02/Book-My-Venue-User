@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/reports";
+const BASE_URL = "http://192.168.1.12:3000/reports";
 
 export interface Report {
   _id: string;

@@ -1,4 +1,4 @@
-import { Sparkles, ArrowRight, SearchX, ChevronLeft, ChevronRight, Search, MapPin, Filter, X, ChevronDown } from "lucide-react";
+import { Sparkles, ArrowRight, SearchX, ChevronLeft, ChevronRight, Search, MapPin, Filter, ChevronDown, ArrowUpDown } from "lucide-react";
 import { getVenueImage } from "../../services/VenueUserservice ";
 import { useVenues } from "../../store/Usevenues";
 import DiscoverCard from "./DiscoverCard";
@@ -34,9 +34,10 @@ interface CustomSelectProps {
     placeholder: string;
     icon?: React.ReactNode;
     className?: string;
+    align?: "left" | "right";
 }
 
-function CustomSelect({ value, onChange, options, placeholder, icon, className = "" }: CustomSelectProps) {
+function CustomSelect({ value, onChange, options, placeholder, icon, className = "", align = "left" }: CustomSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +58,9 @@ function CustomSelect({ value, onChange, options, placeholder, icon, className =
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between pl-11 pr-4 py-3 bg-gray-50 text-slate-700 rounded-2xl text-sm font-medium hover:bg-gray-100 transition-all outline-none border border-transparent cursor-pointer relative"
+                className={`w-full flex items-center justify-between ${
+                    icon ? "pl-11" : "pl-4"
+                } pr-4 py-3 bg-gray-50 text-slate-700 rounded-2xl text-sm font-medium hover:bg-gray-100 transition-all outline-none border border-transparent cursor-pointer relative`}
             >
                 <div className="flex items-center gap-2 truncate">
                     {icon && <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>}
@@ -67,7 +70,9 @@ function CustomSelect({ value, onChange, options, placeholder, icon, className =
             </button>
 
             {isOpen && (
-                <div className="absolute z-[999] left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden">
+                <div className={`absolute z-[999] mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden ${
+                    align === "right" ? "right-0 w-max min-w-full" : "left-0 right-0"
+                }`}>
                     <div className="max-h-60 overflow-y-auto scrollbar-hide py-1">
                         {options.map((opt) => (
                             <div
@@ -76,7 +81,7 @@ function CustomSelect({ value, onChange, options, placeholder, icon, className =
                                     onChange(opt.value);
                                     setIsOpen(false);
                                 }}
-                                className={`px-4 py-2.5 text-sm cursor-pointer transition-all hover:bg-gray-50 flex items-center justify-between ${
+                                className={`px-4 py-2.5 text-sm cursor-pointer transition-all hover:bg-gray-50 flex items-center justify-between gap-4 ${
                                     value === opt.value ? "bg-[#5C614D]/10 text-[#5C614D] font-semibold" : "text-slate-600 hover:text-slate-900"
                                 }`}
                             >
@@ -278,17 +283,18 @@ export default function Discover() {
                                 { label: "Largest Capacity", value: "capacity_high" }
                             ]}
                             placeholder="Sort By"
+                            icon={<ArrowUpDown size={16} />}
                             className="flex-1 min-w-[140px]"
+                            align="right"
                         />
 
                         {/* Clear Button */}
                         {(search || city || category || events || sort !== "newest") && (
                             <button 
                                 onClick={clearFilters}
-                                className="p-3 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-2xl transition-all group"
-                                title="Clear All Filters"
+                                className="px-4 py-3 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-2xl text-sm font-medium transition-all cursor-pointer"
                             >
-                                <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+                                Clear
                             </button>
                         )}
                     </div>
@@ -306,7 +312,7 @@ export default function Discover() {
 
                 {/* Loading Skeletons — only on very first load */}
                 {loading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         {[...Array(6)].map((_, i) => (
                             <div key={i} className="bg-white rounded-[2rem] overflow-hidden shadow-sm animate-pulse border border-gray-50">
                                 <div className="aspect-[4/3] bg-gray-100" />
@@ -367,7 +373,7 @@ export default function Discover() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                            className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8"
                         >
                             {venues.map((venue) => (
                                 <DiscoverCard

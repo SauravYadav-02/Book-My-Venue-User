@@ -1,6 +1,6 @@
-const BASE_URL = "http://localhost:3000/venues";
+const BASE_URL = "http://192.168.1.12:3000/venues";
 // const BASE_URL = "http://192.168.1.14:3000/venues";
-export const MEDIA_BASE_URL = "http://localhost:3000";
+export const MEDIA_BASE_URL = "http://192.168.1.12:3000";
 // export const MEDIA_BASE_URL = "http://192.168.1.14:3000";
 
 import { type Venue } from "../types/venue.types";
@@ -121,5 +121,18 @@ export const rejectVenue = async (id: string, adminDescription: string): Promise
         body: JSON.stringify({ adminDescription }),
     });
     if (!res.ok) throw new Error("Failed to reject venue");
+    return res.json();
+};
+
+export interface PublicStatsResponse {
+    venuesCount: number;
+    citiesCount: number;
+    customersCount: number;
+}
+
+// ✅ Get Public Stats (Venues count, Cities count, Customers count)
+export const getPublicStats = async (): Promise<PublicStatsResponse> => {
+    const res = await fetch(`${BASE_URL}/public-stats`);
+    if (!res.ok) throw new Error("Failed to fetch public stats");
     return res.json();
 };

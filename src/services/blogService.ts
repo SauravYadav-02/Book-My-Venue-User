@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/blogs";
+const BASE_URL = "http://192.168.1.12:3000/blogs";
 
 export interface Comment {
   _id: string;

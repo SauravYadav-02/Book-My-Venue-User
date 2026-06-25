@@ -1,5 +1,5 @@
-import { LogIn, User as UserIcon, Menu, X, LogOut, Bell } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { LogIn, User as UserIcon, Menu, X, LogOut, Bell, CreditCard, Calendar, Heart, AlertCircle } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getUserById } from "../../services/userService";
 import type { UserProfile } from "../../types/user.types";
@@ -14,6 +14,26 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Discover", path: "/discover" },
+    { name: "About Us", path: "/about" },
+    { name: "Contact Us", path: "/contact" },
+    { name: "My Bookings", path: "/my-bookings" },
+    { name: "Wishlist", path: "/wishlist" },
+    { name: "Planning", path: "/planning" },
+    { name: "Complaints", path: "/complaints" },
+    { name: "Blogs", path: "/blogs" }
+  ];
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const userId = localStorage.getItem("userId");
 
@@ -54,6 +74,34 @@ export default function Navbar() {
     }
   }, [userId]);
 
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    if (!isNotificationsOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const container = document.getElementById("notifications-dropdown-container");
+      if (container && !container.contains(target)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isNotificationsOpen]);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    if (!isProfileOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const container = document.getElementById("profile-dropdown-container");
+      if (container && !container.contains(target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isProfileOpen]);
+
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
@@ -79,33 +127,46 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-4 md:py-5 bg-[#F7F6F2]/90 backdrop-blur-md border-b border-gray-200 transition-all duration-300">
+    <header className="fixed top-3 left-3 right-3 md:top-4 md:left-10 md:right-10 z-50 flex items-center justify-between px-4 md:px-10 py-2.5 md:py-3.5 bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300">
       <div className="flex items-center">
-        <Link to="/" className="text-2xl font-serif italic tracking-wide text-brand-text">
-          Book My Venue.
+        <Link to="/" className="flex items-center">
+          <img 
+            src="/images/hero/logo.png" 
+            alt="Book My Venue" 
+            className="h-8 sm:h-10 md:h-12 w-auto object-contain"
+          />
         </Link>
       </div>
 
-      <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-brand-text">
-        <Link to="/" className="hover:text-brand-primary transition-colors">Home</Link>
-        <Link to="/discover" className="hover:text-brand-primary transition-colors">Discover</Link>
-        <Link to="/my-bookings" className="hover:text-brand-primary transition-colors">My Bookings</Link>
-        <Link to="/wishlist" className="hover:text-brand-primary transition-colors">Wishlist</Link>
-        <Link to="/planning" className="hover:text-brand-primary transition-colors">Planning</Link>
-        <Link to="/complaints" className="hover:text-brand-primary transition-colors">Complaints</Link>
-        <Link to="/blogs" className="hover:text-brand-primary transition-colors">Blogs</Link>
+      <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-stone-600">
+        {navLinks.map((link) => {
+          const active = isActive(link.path);
+          return (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`relative px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 ${
+                active 
+                  ? "text-[#4C5040] bg-[#4C5040]/10" 
+                  : "hover:text-[#4C5040] hover:bg-stone-100/50"
+              }`}
+            >
+              {link.name}
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="flex items-center gap-4 md:gap-6 text-sm font-medium text-brand-text relative">
+      <div className="flex items-center gap-2.5 sm:gap-4 md:gap-5 text-sm font-medium text-brand-text relative">
         {userId && (
-          <div className="relative">
+          <div id="notifications-dropdown-container" className="static md:relative">
             <button
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-              className="relative p-2 text-brand-text hover:text-[#5C614D] transition-colors focus:outline-none cursor-pointer flex items-center justify-center rounded-full hover:bg-stone-100"
+              className="relative p-2 text-stone-600 hover:text-[#4C5040] transition-colors focus:outline-none cursor-pointer flex items-center justify-center rounded-full hover:bg-stone-100/50"
             >
-              <Bell size={20} />
+              <Bell size={18} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-[#F7F6F2]">
+                <span className="absolute top-0 right-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white shadow-sm border-2 border-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -114,19 +175,13 @@ export default function Navbar() {
             {/* Notifications Dropdown */}
             <AnimatePresence>
               {isNotificationsOpen && (
-                <>
-                  {/* Click overlay to close */}
-                  <div 
-                    className="fixed inset-0 z-40 cursor-default" 
-                    onClick={() => setIsNotificationsOpen(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-3 w-80 md:w-96 bg-white border border-stone-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
-                  >
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full right-0 mt-3 w-[calc(100vw-24px)] md:w-96 bg-white border border-stone-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-[#F7F6F2]/50">
                       <h3 className="font-serif text-[#4C5040] font-bold text-sm">Notifications</h3>
@@ -190,7 +245,6 @@ export default function Navbar() {
                       )}
                     </div>
                   </motion.div>
-                </>
               )}
             </AnimatePresence>
           </div>
@@ -198,12 +252,12 @@ export default function Navbar() {
 
         {userId ? (
           <div 
+            id="profile-dropdown-container"
             className="relative cursor-pointer flex items-center"
-            onMouseEnter={() => setIsProfileOpen(true)}
-            onMouseLeave={() => setIsProfileOpen(false)}
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
             {/* Profile Avatar */}
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#4C5040] shadow-sm transition-transform hover:scale-105">
+            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#4C5040] shadow-sm transition-transform hover:scale-105">
               {user?.profilePhoto ? (
                 <img
                   src={user.profilePhoto}
@@ -216,12 +270,12 @@ export default function Navbar() {
                 />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-                  <UserIcon size={20} />
+                  <UserIcon size={18} />
                 </div>
               )}
             </div>
 
-            {/* Hover Dropdown */}
+            {/* Click Dropdown */}
             <AnimatePresence>
               {isProfileOpen && (
                 <motion.div
@@ -229,67 +283,103 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-3 pt-2 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-full right-0 mt-3 pt-2 z-50 cursor-default"
                 >
-                  <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-2 min-w-[150px] flex flex-col">
-                    <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                      <p className="text-xs text-gray-400 font-semibold tracking-wider uppercase">Signed in as</p>
-                      <p className="text-sm font-bold text-gray-800 truncate">{user?.name || "Loading..."}</p>
+                    <div className="bg-white border border-stone-100 rounded-2xl shadow-[0_12px_38px_rgba(0,0,0,0.08)] p-2 w-60 flex flex-col">
+                      {/* User Header Info */}
+                      <div className="px-3.5 py-3 border-b border-stone-100 mb-1.5 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-stone-100 flex-shrink-0">
+                          {user?.profilePhoto ? (
+                            <img
+                              src={user.profilePhoto}
+                              alt={user?.name || "User"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-stone-500 bg-stone-100">
+                              <UserIcon size={16} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] text-stone-400 font-semibold tracking-wider uppercase leading-none">Signed in as</p>
+                          <p className="text-xs font-bold text-stone-800 truncate mt-1 leading-tight">{user?.name || "User"}</p>
+                          {user?.email && <p className="text-[10px] text-stone-400 truncate mt-0.5 leading-none">{user.email}</p>}
+                        </div>
+                      </div>
+
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-[#5C614D] font-medium text-xs transition-all duration-200"
+                      >
+                        <UserIcon size={15} className="text-stone-400 group-hover:text-[#5C614D] transition-colors" />
+                        <span>My Profile</span>
+                      </Link>
+                      <Link
+                        to="/transactions"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-[#5C614D] font-medium text-xs transition-all duration-200"
+                      >
+                        <CreditCard size={15} className="text-stone-400 group-hover:text-[#5C614D] transition-colors" />
+                        <span>My Transactions</span>
+                      </Link>
+                      <Link
+                        to="/my-bookings"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-[#5C614D] font-medium text-xs transition-all duration-200"
+                      >
+                        <Calendar size={15} className="text-stone-400 group-hover:text-[#5C614D] transition-colors" />
+                        <span>My Bookings</span>
+                      </Link>
+                      <Link
+                        to="/wishlist"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-[#5C614D] font-medium text-xs transition-all duration-200"
+                      >
+                        <Heart size={15} className="text-stone-400 group-hover:text-[#5C614D] transition-colors" />
+                        <span>My Wishlist</span>
+                      </Link>
+                      <Link
+                        to="/complaints"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-[#5C614D] font-medium text-xs transition-all duration-200"
+                      >
+                        <AlertCircle size={15} className="text-stone-400 group-hover:text-[#5C614D] transition-colors" />
+                        <span>My Complaints</span>
+                      </Link>
+                      
+                      <div className="h-px bg-stone-100 my-1.5" />
+                      
+                      <button
+                        onClick={handleLogout}
+                        className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold text-xs transition-all duration-200 cursor-pointer"
+                      >
+                        <LogOut size={15} className="text-red-400 group-hover:text-red-600 transition-colors" />
+                        <span>Logout</span>
+                      </button>
                     </div>
-                    <Link
-                      to="/profile"
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                    >
-                      My Profile
-                    </Link>
-                    <Link
-                      to="/transactions"
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                    >
-                      My Transactions
-                    </Link>
-                    <Link
-                      to="/my-bookings"
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                    >
-                      My Bookings
-                    </Link>
-                    <Link
-                      to="/wishlist"
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                    >
-                      My Wishlist
-                    </Link>
-                    <Link
-                      to="/complaints"
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 hover:text-[#5C614D] transition-colors"
-                    >
-                      My Complaints
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition-colors"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </motion.div>
+                  </motion.div>
               )}
             </AnimatePresence>
           </div>
         ) : (
-          <Link to="/login" className="flex items-center gap-2 hover:text-[#5C614D] transition-colors">
-            <LogIn size={18} />
-            Sign In
+          <Link 
+            to="/login" 
+            className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full bg-[#4C5040] hover:bg-[#3d4133] text-white hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
+          >
+            <LogIn size={12} />
+            <span>Sign In</span>
           </Link>
         )}
 
         {/* Mobile Menu Toggle Button */}
         <button
-          className="md:hidden p-1 text-brand-text hover:text-brand-primary transition-colors"
+          className="xl:hidden p-1.5 text-stone-600 hover:text-[#4C5040] hover:bg-stone-100/50 rounded-full transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -301,19 +391,29 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 bg-[#F7F6F2] shadow-md border-b border-gray-200 md:hidden flex flex-col py-4 px-6 gap-4 z-40"
+            className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white/95 backdrop-blur-md shadow-xl border border-stone-100 rounded-2xl xl:hidden flex flex-col py-4 px-6 gap-2.5 z-40"
           >
-             <Link to="/" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-            <Link to="/discover" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Discover</Link>
-            <Link to="/transactions" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Transactions</Link>
-            <Link to="/my-bookings" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>My Bookings</Link>
-            <Link to="/wishlist" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
-            <Link to="/planning" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Planning</Link>
-            <Link to="/complaints" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Complaints</Link>
-            <Link to="/blogs" className="text-lg font-medium text-brand-text hover:text-brand-primary transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Blogs</Link>
+             {navLinks.map((link) => {
+               const active = isActive(link.path);
+               return (
+                 <Link
+                   key={link.path}
+                   to={link.path}
+                   className={`text-xs font-semibold uppercase tracking-wider py-2.5 px-4 rounded-xl transition-colors ${
+                     active 
+                       ? "text-[#4C5040] bg-[#4C5040]/10" 
+                       : "text-stone-600 hover:bg-stone-50 hover:text-[#4C5040]"
+                   }`}
+                   onClick={() => setIsMobileMenuOpen(false)}
+                 >
+                   {link.name}
+                 </Link>
+               );
+             })}
           </motion.div>
         )}
       </AnimatePresence>
+
       {/* Premium Custom Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutConfirm && (

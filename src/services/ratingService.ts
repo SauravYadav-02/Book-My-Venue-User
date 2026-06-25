@@ -1,4 +1,4 @@
-const RATINGS_URL = "http://localhost:3000/ratings";
+const RATINGS_URL = "http://192.168.1.12:3000/ratings";
 // const RATINGS_URL = "http://192.168.1.14:3000/ratings";
 export type { Review } from "../types/venue.types";
 import { type Review } from "../types/venue.types";
@@ -37,4 +37,18 @@ export const getVenueReviews = async (venueIdWithQuery: string): Promise<Review[
     const data = await res.json();
     return data.reviews || [];
 };
+
+export interface CanReviewResponse {
+  canReview: boolean;
+  reason: "not_logged_in" | "event_not_passed" | "no_booking" | null;
+  message: string | null;
+  bookingDate?: string;
+}
+
+export const checkCanReview = async (venueId: string, userId: string): Promise<CanReviewResponse> => {
+  const res = await fetch(`${RATINGS_URL}/venue/${venueId}/can-review?userId=${userId}`);
+  if (!res.ok) throw new Error("Failed to check review eligibility");
+  return res.json();
+};
+
 
