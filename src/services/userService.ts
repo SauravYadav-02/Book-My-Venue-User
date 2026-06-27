@@ -55,7 +55,7 @@ export const getUserById = async (id: string): Promise<UserProfile> => {
 // 404  : { message: "User not found" }
 export const updateUser = async (
     id: string,
-    data: UserUpdateForm
+    data: UserUpdateForm | FormData
 ): Promise<{ message: string; user: UserProfile }> => {
     try {
         const res = await axios.put<{ message: string; user: UserProfile }>(
